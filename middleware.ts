@@ -19,7 +19,7 @@ export async function middleware(req: NextRequest) {
   }
 
   // Check for valid Supabase session cookie (set by Supabase, httpOnly, secure)
-  const accessToken = req.cookies.get("sb-access-token")?.value;
+  const accessToken = req.cookies.get("sb-nqlnhrhazihuqtrvpbsj-auth-token")?.value;
   const hasSession = Boolean(accessToken);
 
   // Redirect unauthenticated users trying to access protected routes
