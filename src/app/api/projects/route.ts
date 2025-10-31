@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getSession } from "@/lib/auth";
 import { listProjectsForUser, createProject } from "@/lib/data/projects";
+import { assertValidCsrf } from "@/lib/security/verify-csrf";
 
 const createProjectSchema = z.object({
   name: z.string().min(3).max(120),
@@ -24,6 +25,12 @@ export const POST = async (request: Request) => {
 
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  try {
+    await await assertValidCsrf(request);
+  } catch {
+    return NextResponse.json({ error: "Invalid CSRF token" }, { status: 403 });
   }
 
   const raw = await request.json().catch(() => null);

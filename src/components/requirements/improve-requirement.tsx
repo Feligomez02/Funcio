@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { AI_LANGUAGE_OPTIONS } from "@/lib/ai/languages";
 import { useI18n } from "@/components/i18n/i18n-provider";
+import { fetchWithCsrf } from "@/lib/security/csrf";
 
 export type ImprovementResult = {
   improvedText: string;
@@ -92,7 +93,7 @@ export const ImproveRequirement = ({
     setError(null);
     setSuccessMessage(null);
 
-    const response = await fetch("/api/ai/improve", {
+    const response = await fetchWithCsrf("/api/ai/improve", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -127,7 +128,7 @@ export const ImproveRequirement = ({
     setSuccessMessage(null);
     const improvedText = result.improvedText;
 
-    const response = await fetch(`/api/requirements/${requirementId}`, {
+    const response = await fetchWithCsrf(`/api/requirements/${requirementId}`, {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",

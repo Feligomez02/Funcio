@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { RequirementJiraIssues, type RequirementLinkInfo } from "@/components/requirements/jira-issues-section";
 import { Card } from "@/components/ui/card";
+import { fetchWithCsrf } from "@/lib/security/csrf";
 
 type RequirementJiraDrawerSectionProps = {
   requirementId: string;
@@ -32,7 +33,7 @@ export const RequirementJiraDrawerSection = ({
       setError(null);
 
       try {
-        const response = await fetch(`/api/requirements/${requirementId}/links`, {
+        const response = await fetchWithCsrf(`/api/requirements/${requirementId}/links`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",

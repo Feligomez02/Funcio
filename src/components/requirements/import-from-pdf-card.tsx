@@ -10,6 +10,7 @@ import {
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { fetchWithCsrf } from "@/lib/security/csrf";
 
 type UploadState =
   | { status: "idle" }
@@ -199,7 +200,7 @@ export function RequirementsImportCard({
 
     try {
       setState({ status: "signing" });
-      const signResponse = await fetch("/api/uploads/sign", {
+      const signResponse = await fetchWithCsrf("/api/uploads/sign", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -235,7 +236,7 @@ export function RequirementsImportCard({
 
       setState({ status: "ingesting" });
 
-      const ingestResponse = await fetch("/api/ingest", {
+      const ingestResponse = await fetchWithCsrf("/api/ingest", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -320,7 +321,7 @@ export function RequirementsImportCard({
 
     const poll = async () => {
       try {
-        const response = await fetch(`/api/documents/${documentId}`, {
+        const response = await fetchWithCsrf(`/api/documents/${documentId}`, {
           method: "GET",
           cache: "no-store",
         });

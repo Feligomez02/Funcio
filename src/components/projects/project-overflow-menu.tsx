@@ -6,6 +6,7 @@ import { Drawer } from "@/components/ui/drawer";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import type { ProjectPageDictionary } from "@/lib/i18n/types";
+import { fetchWithCsrf } from "@/lib/security/csrf";
 
 type ProjectOverflowMenuProps = {
   projectId: string;
@@ -58,7 +59,7 @@ export const ProjectOverflowMenu = ({
     setIsSaving(true);
     setError(null);
 
-    const response = await fetch(`/api/projects/${projectId}`, {
+    const response = await fetchWithCsrf(`/api/projects/${projectId}`, {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
@@ -94,7 +95,7 @@ export const ProjectOverflowMenu = ({
     setIsDeleting(true);
     setError(null);
 
-    const response = await fetch(`/api/projects/${projectId}`, {
+    const response = await fetchWithCsrf(`/api/projects/${projectId}`, {
       method: "DELETE",
     });
 

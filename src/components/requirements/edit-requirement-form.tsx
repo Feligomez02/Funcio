@@ -13,6 +13,7 @@ import {
   type RequirementTypeValue,
 } from "@/components/requirements/options";
 import { useI18n } from "@/components/i18n/i18n-provider";
+import { fetchWithCsrf } from "@/lib/security/csrf";
 
 const isRequirementTypeValue = (
   value: string | null | undefined
@@ -147,7 +148,7 @@ export const EditRequirementForm = ({
       payload.aiTypeReason = null;
     }
 
-    const response = await fetch(`/api/requirements/${requirementId}`, {
+    const response = await fetchWithCsrf(`/api/requirements/${requirementId}`, {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",

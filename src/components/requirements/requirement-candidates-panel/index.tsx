@@ -3,6 +3,7 @@ import { useRouter } from "next/navigation";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/dialog";
+import { fetchWithCsrf } from "@/lib/security/csrf";
 
 type DocumentSummary = {
   id: string;
@@ -43,10 +44,13 @@ export const RequirementCandidatesPanel = ({
       }
 
       try {
-        const response = await fetch(`/api/projects/${projectId}/documents`, {
-          method: "GET",
-          cache: "no-store",
-        });
+        const response = await fetchWithCsrf(
+          `/api/projects/${projectId}/documents`,
+          {
+            method: "GET",
+            cache: "no-store",
+          },
+        );
 
         if (!response.ok) {
           const payload = await response.json().catch(() => ({}));
@@ -111,7 +115,7 @@ export const RequirementCandidatesPanel = ({
     async (documentId: string) => {
       setPendingHideId(documentId);
       try {
-        const response = await fetch(
+        const response = await fetchWithCsrf(
           `/api/projects/${projectId}/documents/${documentId}`,
           {
             method: "PATCH",

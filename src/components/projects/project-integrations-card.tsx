@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/select";
+import { fetchWithCsrf } from "@/lib/security/csrf";
 
 export type ProjectIntegrationsCardProps = {
   projectId: string;
@@ -215,7 +216,7 @@ export const ProjectIntegrationsCard = ({
     setSuccess(null);
 
     try {
-      const response = await fetch(`/api/projects/${projectId}/integrations`, {
+      const response = await fetchWithCsrf(`/api/projects/${projectId}/integrations`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -282,7 +283,7 @@ export const ProjectIntegrationsCard = ({
     const payload = buildPayload({ includeProjectKey: false, includeToken: true });
 
     try {
-      const response = await fetch(`/api/integrations/validate`, {
+      const response = await fetchWithCsrf(`/api/integrations/validate`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

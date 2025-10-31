@@ -6,6 +6,7 @@ import { getProjectById } from "@/lib/data/projects";
 import { decryptSecret } from "@/lib/crypto";
 import { fetchJiraProjects, resolveJiraConfig } from "@/lib/integrations/jira";
 import { consumeRateLimit } from "@/lib/rate-limit";
+import { assertValidCsrf } from "@/lib/security/verify-csrf";
 
 const validateSchema = z.object({
   projectId: z.string().min(1, "Project ID is required"),
@@ -30,6 +31,12 @@ export const POST = async (request: Request) => {
 
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  try {
+    await await assertValidCsrf(request);
+  } catch {
+    return NextResponse.json({ error: "Invalid CSRF token" }, { status: 403 });
   }
 
   const raw = await request.json().catch(() => null);
@@ -141,7 +148,7 @@ export const POST = async (request: Request) => {
   if (existingEncryptedToken) {
     try {
       decryptedExistingToken = decryptSecret(existingEncryptedToken);
-    } catch (error) {
+    } catch {
       console.error("Unable to decrypt stored JIRA token", error);
       decryptedExistingToken = null;
     }

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
+import { fetchWithCsrf } from "@/lib/security/csrf";
 
 export type JiraIssueWithScore = {
   id: string;
@@ -146,13 +147,15 @@ export const RequirementJiraIssues = ({
     setError(null);
 
     try {
-      const response = await fetch(`/api/requirements/${requirementId}/jira/issues`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
+      const response = await fetchWithCsrf(
+        `/api/requirements/${requirementId}/jira/issues`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
         },
-      });
-
+      );
       const body = (await response.json().catch(() => ({}))) as Record<string, unknown>;
 
       if (!response.ok) {
@@ -189,7 +192,7 @@ export const RequirementJiraIssues = ({
     setLinkMessage(null);
 
     try {
-      const response = await fetch(`/api/requirements/${requirementId}/links`, {
+      const response = await fetchWithCsrf(`/api/requirements/${requirementId}/links`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -244,7 +247,7 @@ export const RequirementJiraIssues = ({
     setLinkMessage(null);
 
     try {
-      const response = await fetch(
+      const response = await fetchWithCsrf(
         `/api/requirements/${requirementId}/links/${link.id}`,
         {
           method: "DELETE",
@@ -306,7 +309,7 @@ export const RequirementJiraIssues = ({
     setLinkError(null);
 
     try {
-      const response = await fetch(
+      const response = await fetchWithCsrf(
         `/api/requirements/${requirementId}/jira/push`,
         {
           method: "POST",

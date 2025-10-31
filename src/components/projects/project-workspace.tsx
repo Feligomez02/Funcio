@@ -6,10 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Modal } from "@/components/ui/dialog";
 import { Drawer } from "@/components/ui/drawer";
-import {
-  RequirementsBoard,
-  STATUS_COLOR_CLASSES,
-} from "@/components/projects/requirements-board";
+import { RequirementsBoard } from "@/components/projects/requirements-board";
 import { CreateRequirementForm } from "@/components/requirements/create-requirement-form";
 import { EditRequirementForm } from "@/components/requirements/edit-requirement-form";
 import { ProjectMembersCard } from "@/components/projects/project-members-card";
@@ -30,6 +27,7 @@ import {
   type RequirementStatusValue,
 } from "@/components/requirements/options";
 import { PageHeader } from "@/components/layout/page-header";
+import { fetchWithCsrf } from "@/lib/security/csrf";
 
 type RequirementRecord = {
   id: string;
@@ -192,7 +190,7 @@ export const ProjectWorkspace = ({
       )
     );
 
-    const response = await fetch(`/api/requirements/${requirementId}`, {
+    const response = await fetchWithCsrf(`/api/requirements/${requirementId}`, {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",

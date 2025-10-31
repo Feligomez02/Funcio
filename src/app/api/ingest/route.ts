@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
 import { NextResponse } from "next/server";
+import { z } from "zod";
 import { env } from "@/env";
 import {
   getProjectRole,
@@ -13,21 +14,36 @@ import {
 import { getPdfPageCount } from "@/lib/pdf/extract";
 import { createSupabaseServiceRoleClient } from "@/lib/supabase/service-role";
 import { POST as runOcrTick } from "@/app/api/jobs/tick/route";
-
-type IngestRequestBody = {
-  projectId: string;
-  documentName: string;
-  storagePath: string;
-  storageBucket: string;
-  pages?: number;
-  language?: string | null;
-  sourceHash?: string | null;
-};
+import { assertValidCsrf } from "@/lib/security/verify-csrf";
 
 const DEFAULT_MAX_PAGES = 100;
 const DEFAULT_DAILY_UPLOAD_LIMIT = 2;
 
 type UploadLimitOverrides = Map<string, number>;
+
+const ingestRequestSchema = z.object({
+  projectId: z.string().uuid(),
+  documentName: z
+    .string()
+    .min(1, "documentName is required")
+    .max(200, "documentName must be ≤ 200 characters"),
+  storagePath: z
+    .string()
+    .min(1, "storagePath is required")
+    .max(500, "storagePath must be ≤ 500 characters"),
+  storageBucket: z
+    .string()
+    .min(1, "storageBucket is required")
+    .max(120, "storageBucket must be ≤ 120 characters"),
+  pages: z.number().int().positive().max(600).optional(),
+  language: z.string().max(16).optional().nullable(),
+  sourceHash: z
+    .string()
+    .regex(/^[a-f0-9]{16,128}$/i, "sourceHash must be hex")
+    .optional()
+    .nullable(),
+});
+
 
 function normalizeOverrideKey(value?: string | null) {
   if (!value) {
@@ -113,6 +129,10 @@ function getUtcStartOfNextDayIso(reference: Date = new Date()) {
   ).toISOString();
 }
 
+function sanitizeDocumentName(value: string): string {
+  return value.replace(/[\r\n\t]+/g, " ").trim();
+}
+
 async function resolveDocumentMetadata(
   bucket: string,
   path: string,
@@ -150,22 +170,20 @@ async function resolveDocumentMetadata(
 export async function POST(request: Request) {
   try {
     const user = await requireAuthenticatedUser();
-    const body = (await request.json()) as IngestRequestBody;
 
-    if (
-      !body?.projectId ||
-      !body?.documentName ||
-      !body?.storagePath ||
-      !body?.storageBucket
-    ) {
+    await await assertValidCsrf(request);
+
+    const raw = await request.json().catch(() => null);
+    const parsed = ingestRequestSchema.safeParse(raw);
+
+    if (!parsed.success) {
       return NextResponse.json(
-        {
-          error:
-            "projectId, documentName, storagePath and storageBucket are required",
-        },
+        { error: "Invalid payload", details: parsed.error.flatten() },
         { status: 400 },
       );
     }
+
+    const body = parsed.data;
 
     const role = await getProjectRole(body.projectId, user.id);
     if (role !== "admin") {
@@ -221,7 +239,7 @@ export async function POST(request: Request) {
     const { pages, sourceHash } = await resolveDocumentMetadata(
       body.storageBucket,
       body.storagePath,
-      body.pages,
+      body.pages ?? undefined,
       body.sourceHash ?? null,
     );
 
@@ -235,7 +253,7 @@ export async function POST(request: Request) {
 
     const document = await createRequirementDocument({
       project_id: body.projectId,
-      name: body.documentName,
+      name: sanitizeDocumentName(body.documentName),
       storage_bucket: body.storageBucket,
       storage_path: body.storagePath,
       pages,
@@ -308,6 +326,9 @@ export async function POST(request: Request) {
       }
       if (error.message === "Forbidden") {
         return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      }
+      if (error.message === "Invalid CSRF token") {
+        return NextResponse.json({ error: "Invalid CSRF token" }, { status: 403 });
       }
     }
     return NextResponse.json(

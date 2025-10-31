@@ -8,6 +8,8 @@ import {
   getDocumentById,
   setDocumentHiddenState,
 } from "@/lib/data/requirements";
+import { getProjectById } from "@/lib/data/projects";
+import { assertValidCsrf } from "@/lib/security/verify-csrf";
 
 type RouteContext = {
   params: Promise<{ projectId: string; documentId: string }>;
@@ -29,15 +31,27 @@ export async function PATCH(request: Request, context: RouteContext) {
     }
 
     const user = await requireAuthenticatedUser();
-    const role = await getProjectRole(projectId, user.id);
-
-    if (role !== "admin") {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
-
     const document = await getDocumentById(documentId);
     if (!document || document.project_id !== projectId) {
       return NextResponse.json({ error: "Document not found" }, { status: 404 });
+    }
+
+    const project = await getProjectById(projectId);
+    if (!project) {
+      return NextResponse.json({ error: "Project not found" }, { status: 404 });
+    }
+
+    const role = await getProjectRole(projectId, user.id);
+    const isOwner = project.owner_id === user.id;
+
+    if (role !== "admin" && !isOwner) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    try {
+      await assertValidCsrf(request);
+    } catch {
+      return NextResponse.json({ error: "Invalid CSRF token" }, { status: 403 });
     }
 
     const payload = await request.json().catch(() => null);

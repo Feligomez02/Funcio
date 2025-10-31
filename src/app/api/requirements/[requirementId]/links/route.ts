@@ -6,6 +6,7 @@ import {
   listRequirementLinks,
   createRequirementLink,
 } from "@/lib/data/requirement-links";
+import { assertValidCsrf } from "@/lib/security/verify-csrf";
 
 const createLinkSchema = z.object({
   provider: z.string().trim().min(1, "Provider is required"),
@@ -114,6 +115,12 @@ export const POST = async (
 
   if (!canManage) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  try {
+    await assertValidCsrf(request);
+  } catch {
+    return NextResponse.json({ error: "Invalid CSRF token" }, { status: 403 });
   }
 
   const raw = await request.json().catch(() => null);

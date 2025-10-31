@@ -4,6 +4,7 @@ import { getSession, getProjectRole } from "@/lib/auth";
 import { getProjectById } from "@/lib/data/projects";
 import { createSupabaseServiceRoleClient } from "@/lib/supabase/service-role";
 import { logAuditEvent } from "@/lib/audit";
+import { assertValidCsrf } from "@/lib/security/verify-csrf";
 
 const patchSchema = z.object({
   name: z.string().trim().min(3).max(200),
@@ -38,9 +39,16 @@ export const PATCH = async (
   }
 
   const role = await getProjectRole(projectId, session.user.id);
+  const isOwner = project.owner_id === session.user.id;
 
-  if (role !== "admin") {
+  if (role !== "admin" && !isOwner) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  try {
+    await assertValidCsrf(request);
+  } catch {
+    return NextResponse.json({ error: "Invalid CSRF token" }, { status: 403 });
   }
 
   const body = await request.json().catch(() => null);
@@ -98,7 +106,7 @@ export const PATCH = async (
 };
 
 export const DELETE = async (
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ projectId: string }> }
 ) => {
   const session = await getSession();
@@ -120,9 +128,16 @@ export const DELETE = async (
   }
 
   const role = await getProjectRole(projectId, session.user.id);
+  const isOwner = project.owner_id === session.user.id;
 
-  if (role !== "admin") {
+  if (role !== "admin" && !isOwner) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  try {
+    await assertValidCsrf(request);
+  } catch {
+    return NextResponse.json({ error: "Invalid CSRF token" }, { status: 403 });
   }
 
   const supabase = createSupabaseServiceRoleClient();

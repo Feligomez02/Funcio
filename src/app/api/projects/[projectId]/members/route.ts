@@ -7,6 +7,7 @@ import {
 } from "@/lib/data/project-members";
 import { getRequestLocale } from "@/lib/i18n/get-locale";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
+import { assertValidCsrf } from "@/lib/security/verify-csrf";
 
 const inviteSchema = z.object({
   email: z.string().email("A valid email is required"),
@@ -49,6 +50,12 @@ export const POST = async (
 
   if (role !== "admin") {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  try {
+    await assertValidCsrf(request);
+  } catch {
+    return NextResponse.json({ error: "Invalid CSRF token" }, { status: 403 });
   }
 
   const raw = await request.json().catch(() => null);

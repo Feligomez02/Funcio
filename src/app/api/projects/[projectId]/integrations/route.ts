@@ -4,6 +4,7 @@ import { getSession, getProjectRole } from "@/lib/auth";
 import { getProjectById, updateProjectIntegrations } from "@/lib/data/projects";
 import { encryptSecret, decryptSecret } from "@/lib/crypto";
 import { fetchJiraProjects, resolveJiraConfig } from "@/lib/integrations/jira";
+import { assertValidCsrf } from "@/lib/security/verify-csrf";
 
 const patchSchema = z.object({
   jiraProjectKey: z
@@ -47,6 +48,12 @@ export const PATCH = async (
 
   if (!role || role !== "admin") {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  try {
+    await assertValidCsrf(request);
+  } catch {
+    return NextResponse.json({ error: "Invalid CSRF token" }, { status: 403 });
   }
 
   const project = await getProjectById(projectId);
@@ -107,7 +114,7 @@ export const PATCH = async (
   if (existingEncryptedToken) {
     try {
       decryptedExistingToken = decryptSecret(existingEncryptedToken);
-    } catch (error) {
+    } catch {
       console.error("Unable to decrypt stored JIRA token", error);
       decryptedExistingToken = null;
     }

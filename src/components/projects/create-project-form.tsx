@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useI18n } from "@/components/i18n/i18n-provider";
+import { fetchWithCsrf } from "@/lib/security/csrf";
 
 export const CreateProjectForm = ({ onSuccess }: { onSuccess?: () => void }) => {
   const router = useRouter();
@@ -22,7 +23,7 @@ export const CreateProjectForm = ({ onSuccess }: { onSuccess?: () => void }) => 
     setError(null);
     setIsSubmitting(true);
 
-    const response = await fetch("/api/projects", {
+    const response = await fetchWithCsrf("/api/projects", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

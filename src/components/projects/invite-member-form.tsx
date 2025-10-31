@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { useI18n } from "@/components/i18n/i18n-provider";
 import type { RolesDictionary } from "@/lib/i18n/types";
+import { fetchWithCsrf } from "@/lib/security/csrf";
 
 const ROLE_ORDER: Array<keyof RolesDictionary> = [
   "collaborator",
@@ -56,7 +57,7 @@ export const InviteMemberForm = ({ projectId }: { projectId: string }) => {
       const timeout = setTimeout(() => controller.abort(), 10000); // 10s safety timeout
 
       try {
-        const response = await fetch(`/api/projects/${projectId}/members`, {
+        const response = await fetchWithCsrf(`/api/projects/${projectId}/members`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

@@ -2,9 +2,10 @@ import { NextResponse } from "next/server";
 import { getSession, getProjectRole } from "@/lib/auth";
 import { getRequirementById } from "@/lib/data/requirements";
 import { deleteRequirementLink } from "@/lib/data/requirement-links";
+import { assertValidCsrf } from "@/lib/security/verify-csrf";
 
 export const DELETE = async (
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ requirementId: string; linkId: string }> }
 ) => {
   const session = await getSession();
@@ -31,6 +32,12 @@ export const DELETE = async (
 
   if (!canManage) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  try {
+    await assertValidCsrf(request);
+  } catch {
+    return NextResponse.json({ error: "Invalid CSRF token" }, { status: 403 });
   }
 
   const result = await deleteRequirementLink({

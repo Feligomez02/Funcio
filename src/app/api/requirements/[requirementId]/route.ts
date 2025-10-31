@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getSession, getProjectRole } from "@/lib/auth";
 import { updateRequirement, getRequirementById } from "@/lib/data/requirements";
+import { assertValidCsrf } from "@/lib/security/verify-csrf";
 
 const patchSchema = z.object({
   projectId: z.string().uuid("projectId must be a valid UUID"),
@@ -37,6 +38,12 @@ export const PATCH = async (
 
   if (!requirementId) {
     return NextResponse.json({ error: "Missing requirementId" }, { status: 400 });
+  }
+
+  try {
+    await assertValidCsrf(request);
+  } catch {
+    return NextResponse.json({ error: "Invalid CSRF token" }, { status: 403 });
   }
 
   const raw = await request.json().catch(() => null);

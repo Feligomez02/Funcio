@@ -16,6 +16,7 @@ import {
   listRequirementLinks,
   type RequirementLink,
 } from "@/lib/data/requirement-links";
+import { assertValidCsrf } from "@/lib/security/verify-csrf";
 
 const pushSchema = z.object({
   projectKey: z.string().trim().min(1, "Project key is required."),
@@ -66,6 +67,12 @@ export const POST = async (
 
   if (role !== "admin" && role !== "analyst") {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  try {
+    await assertValidCsrf(request);
+  } catch {
+    return NextResponse.json({ error: "Invalid CSRF token" }, { status: 403 });
   }
 
   const project = await getProjectById(requirement.project_id);
@@ -147,7 +154,7 @@ export const POST = async (
   if (encryptedToken) {
     try {
       jiraApiToken = decryptSecret(encryptedToken);
-    } catch (error) {
+    } catch {
       console.error("Unable to decrypt stored JIRA token", error);
       jiraApiToken = null;
     }
@@ -304,7 +311,7 @@ export const POST = async (
       },
       { status: responseStatus }
     );
-  } catch (error) {
+  } catch {
     if (error instanceof JiraRequestError) {
       const detailMessage =
         error.message && error.message.length > 0

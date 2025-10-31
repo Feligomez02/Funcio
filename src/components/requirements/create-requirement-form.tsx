@@ -15,6 +15,7 @@ import {
 import { AI_LANGUAGE_OPTIONS } from "@/lib/ai/languages";
 import type { ImprovementResult } from "@/components/requirements/improve-requirement";
 import { useI18n } from "@/components/i18n/i18n-provider";
+import { fetchWithCsrf } from "@/lib/security/csrf";
 
 export const CreateRequirementForm = ({
   projectId,
@@ -70,7 +71,7 @@ export const CreateRequirementForm = ({
     setError(null);
     setIsSubmitting(true);
 
-    const response = await fetch("/api/requirements", {
+    const response = await fetchWithCsrf("/api/requirements", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -124,7 +125,7 @@ export const CreateRequirementForm = ({
     setIsImproving(true);
     setAiError(null);
 
-    const response = await fetch("/api/ai/improve", {
+    const response = await fetchWithCsrf("/api/ai/improve", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

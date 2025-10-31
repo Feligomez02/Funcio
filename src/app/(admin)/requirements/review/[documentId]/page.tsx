@@ -1,7 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Select } from "@/components/ui/select";
@@ -9,6 +9,7 @@ import { Modal } from "@/components/ui/dialog";
 import { AI_LANGUAGE_OPTIONS } from "@/lib/ai/languages";
 import type { ImprovementResult } from "@/components/requirements/improve-requirement";
 import { PageHeader } from "@/components/layout/page-header";
+import { fetchWithCsrf } from "@/lib/security/csrf";
 
 type RequirementCandidate = {
   id: string;
@@ -103,7 +104,6 @@ const STATUS_BADGES: Record<
 
 export default function ReviewPage() {
   const params = useParams();
-  const router = useRouter();
   const rawDocumentId = params?.documentId;
   const documentId =
     typeof rawDocumentId === "string"
@@ -114,7 +114,6 @@ export default function ReviewPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [document, setDocument] = useState<RequirementDocument | null>(null);
-  const [pages, setPages] = useState<RequirementPage[]>([]);
   const [candidates, setCandidates] = useState<RequirementCandidate[]>([]);
   const [processingId, setProcessingId] = useState<string | null>(null);
   const [duplicates, setDuplicates] = useState<DuplicateGroup[]>([]);
@@ -141,7 +140,7 @@ export default function ReviewPage() {
     if (!documentId) {
       setDocument(null);
       setCandidates([]);
-      setPages([]);
+
       setDuplicates([]);
       setJiraConfig(null);
       setError("Documento no encontrado.");
@@ -150,7 +149,7 @@ export default function ReviewPage() {
     }
 
     setLoading(true);
-    fetch(`/api/documents/${documentId}`)
+    fetchWithCsrf(`/api/documents/${documentId}`)
       .then(async (response) => {
         if (!response.ok) {
           const payload = await response.json().catch(() => ({}));
@@ -259,7 +258,7 @@ export default function ReviewPage() {
   ) => {
     setProcessingId(id);
     try {
-      const response = await fetch(
+      const response = await fetchWithCsrf(
         `/api/documents/${documentId}/candidates/${id}`,
         {
           method: "PATCH",
@@ -303,7 +302,7 @@ export default function ReviewPage() {
   const handleCandidateReject = async (id: string) => {
     setProcessingId(id);
     try {
-      const response = await fetch(
+      const response = await fetchWithCsrf(
         `/api/documents/${documentId}/candidates/${id}`,
         {
           method: "PATCH",
@@ -343,7 +342,7 @@ export default function ReviewPage() {
   ) => {
     setProcessingId(candidate.id);
     try {
-      const response = await fetch(
+      const response = await fetchWithCsrf(
         `/api/documents/${documentId}/candidates/${candidate.id}`,
         {
           method: "PATCH",
@@ -430,7 +429,7 @@ export default function ReviewPage() {
     }
 
     try {
-      const response = await fetch(
+      const response = await fetchWithCsrf(
         `/api/requirements/${candidate.requirement_id}/jira/push`,
         {
           method: "POST",
@@ -624,7 +623,8 @@ export default function ReviewPage() {
   }));
 
   return (
-    <section className="mx-auto flex max-w-6xl flex-col gap-8 px-4 pb-10">
+    <>
+      <section className="mx-auto flex max-w-6xl flex-col gap-8 px-4 pb-10">
       <PageHeader
         title="Revisar candidatos"
         description="Evalua, mejora y aprueba los requerimientos extraidos desde PDF."
@@ -792,7 +792,24 @@ export default function ReviewPage() {
           )}
         </div>
       )}
-    </section>
+      </section>
+
+      <Modal
+        open={blockedModal !== null}
+        onClose={() => setBlockedModal(null)}
+        title={blockedModal?.title ?? "Acción bloqueada"}
+        size="sm"
+      >
+        <div className="space-y-4">
+          <p className="text-sm text-slate-600">{blockedModal?.message}</p>
+          <div className="flex justify-end">
+            <Button type="button" onClick={() => setBlockedModal(null)}>
+              Entendido
+            </Button>
+          </div>
+        </div>
+      </Modal>
+    </>
   );
 }
 
@@ -1060,7 +1077,7 @@ const CandidateAiAssistant = ({
     setError(null);
 
     try {
-      const response = await fetch("/api/ai/improve", {
+      const response = await fetchWithCsrf("/api/ai/improve", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
