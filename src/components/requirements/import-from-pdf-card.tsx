@@ -136,7 +136,7 @@ type RequirementsImportCardProps = {
 };
 
 const MAX_PAGES_FALLBACK =
-  Number(process.env.NEXT_PUBLIC_OCR_MAX_PAGES ?? "100") || 100;
+  Number(process.env.NEXT_PUBLIC_OCR_MAX_PAGES ?? "10") || 10;
 
 export function RequirementsImportCard({
   projectId,
