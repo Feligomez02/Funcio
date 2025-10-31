@@ -16,11 +16,11 @@ const baseStyles =
 
 const variantStyles: Record<string, string> = {
   primary:
-    "bg-indigo-600 text-white shadow-sm shadow-indigo-500/30 hover:bg-indigo-500 focus-visible:ring-indigo-600",
+    "bg-black text-white shadow-sm shadow-slate-600/30 hover:bg-slate-900 focus-visible:ring-black",
   secondary:
     "bg-white text-slate-900 ring-1 ring-slate-200 hover:bg-slate-50 hover:ring-slate-300 focus-visible:ring-slate-400",
   tertiary:
-    "bg-amber-100 text-amber-900 shadow-sm shadow-amber-500/20 hover:bg-amber-200 focus-visible:ring-amber-400",
+    "bg-slate-100 text-slate-800 hover:bg-slate-200 focus-visible:ring-slate-300",
   ghost: "bg-transparent text-slate-600 hover:bg-slate-100/60 hover:text-slate-900 focus-visible:ring-slate-300",
 };
 

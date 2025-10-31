@@ -230,33 +230,33 @@ export const ImproveRequirement = ({
           </div>
           <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500">
             <p>
-              Confidence {Math.round(result.confidence * 100)}% · Provider: {result.provider}
-              {result.tokensUsed ? ` · Tokens used: ${result.tokensUsed}` : ""}
+              Confidence {Math.round(result.confidence * 100)}% - Provider: {result.provider}
+              {result.tokensUsed ? ` - Tokens used: ${result.tokensUsed}` : ""}
             </p>
             <p>Output language: {result.language}</p>
           </div>
           {result.typeSuggestion ? (
-            <div className="rounded-lg border border-amber-200 bg-amber-50/70 p-4 text-sm text-amber-900">
-              <h4 className="font-semibold text-amber-800">{typeSuggestionCard.title}</h4>
+            <div className="rounded-lg border border-slate-200 bg-white p-4 text-sm text-slate-700">
+              <h4 className="font-semibold text-slate-800">{typeSuggestionCard.title}</h4>
               <p className="mt-1">
                 <span className="font-semibold capitalize">{result.typeSuggestion}</span>
                 {typeof result.typeConfidence === "number"
-                  ? ` · ${typeSuggestionCard.confidenceLabel}: ${Math.round(
+                  ? ` - ${typeSuggestionCard.confidenceLabel}: ${Math.round(
                       result.typeConfidence * 100
                     )}%`
                   : ""}
               </p>
               {result.typeReason ? (
-                <p className="mt-1 text-amber-800">
+                <p className="mt-1 text-slate-700">
                   {typeSuggestionCard.reasonLabel}: {result.typeReason}
                 </p>
               ) : null}
               {result.typeChangeNote ? (
-                <p className="mt-1 text-amber-800">
+                <p className="mt-1 text-slate-700">
                   {typeSuggestionCard.changeNoteLabel}: <em>{result.typeChangeNote}</em>
                 </p>
               ) : null}
-              <p className="mt-2 text-xs text-amber-700">{typeSuggestionCard.reminder}</p>
+              <p className="mt-2 text-xs text-slate-500">{typeSuggestionCard.reminder}</p>
             </div>
           ) : null}
           <div className="flex flex-wrap items-center gap-3">

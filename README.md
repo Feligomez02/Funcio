@@ -68,3 +68,4 @@ Nota: La autenticación OAuth/Auth0 está desactivada en esta versión inicial y
 ---
 
 ¿Listo para llevar tus requerimientos al siguiente nivel? Probá Funcio y convertí el análisis en tu ventaja competitiva.
+

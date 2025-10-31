@@ -1,7 +1,436 @@
 import { createSupabaseServiceRoleClient } from "@/lib/supabase/service-role";
 import { logAuditEvent } from "@/lib/audit";
 import { recordRequirementHistory } from "@/lib/data/requirement-history";
-import type { Database } from "@/types/database";
+import type { Database, Json } from "@/types/database";
+
+export type RequirementDocument =
+  Database["public"]["Tables"]["documents"]["Row"];
+export type RequirementCandidate =
+  Database["public"]["Tables"]["requirement_candidates"]["Row"];
+export type RequirementSource =
+  Database["public"]["Tables"]["requirement_sources"]["Row"];
+export type RequirementPage =
+  Database["public"]["Tables"]["document_pages"]["Row"];
+
+export const getDocumentById = async (
+  documentId: string
+): Promise<RequirementDocument | null> => {
+  const supabase = createSupabaseServiceRoleClient();
+  const { data, error } = await supabase
+    .from("documents")
+    .select("*")
+    .eq("id", documentId)
+    .maybeSingle();
+
+  if (error) {
+    console.error("Failed to load document", error);
+    throw new Error("Failed to load document");
+  }
+
+  return (data as RequirementDocument) ?? null;
+};
+
+export const createRequirementDocument = async (
+  payload: Database["public"]["Tables"]["documents"]["Insert"]
+): Promise<RequirementDocument> => {
+  const supabase = createSupabaseServiceRoleClient();
+
+  const insertPayload: Database["public"]["Tables"]["documents"]["Insert"] = {
+    status: "queued",
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+    ...payload,
+    storage_bucket: payload.storage_bucket ?? "documents",
+    hidden_at: payload.hidden_at ?? null,
+  };
+
+  const { data, error } = await supabase
+    .from("documents")
+    .insert(insertPayload)
+    .select()
+    .single();
+
+  if (error || !data) {
+    console.error("Failed to create requirement document", error);
+    throw new Error("Failed to create document");
+  }
+
+  return data as RequirementDocument;
+};
+
+export const createDocumentPages = async (
+  pages: Database["public"]["Tables"]["document_pages"]["Insert"][]
+): Promise<void> => {
+  if (!pages.length) {
+    return;
+  }
+
+  const supabase = createSupabaseServiceRoleClient();
+
+  const payload = pages.map((page) => ({
+    status: "queued",
+    created_at: new Date().toISOString(),
+    ...page,
+  }));
+
+  const { error } = await supabase.from("document_pages").insert(payload);
+
+  if (error) {
+    console.error("Failed to create document pages", error);
+    throw new Error("Failed to create document pages");
+  }
+};
+
+export const listDocumentCandidates = async (
+  documentId: string
+): Promise<RequirementCandidate[]> => {
+  const supabase = createSupabaseServiceRoleClient();
+  const { data, error } = await supabase
+    .from("requirement_candidates")
+    .select("*")
+    .eq("document_id", documentId)
+    .order("created_at", { ascending: true });
+
+  if (error) {
+    console.error("Failed to list requirement candidates", error);
+    throw new Error("Failed to list requirement candidates");
+  }
+
+  return (data ?? []) as RequirementCandidate[];
+};
+
+export const listDocumentPages = async (
+  documentId: string
+): Promise<RequirementPage[]> => {
+  const supabase = createSupabaseServiceRoleClient();
+  const { data, error } = await supabase
+    .from("document_pages")
+    .select("*")
+    .eq("document_id", documentId)
+    .order("page_number", { ascending: true });
+
+  if (error) {
+    console.error("Failed to list document pages", error);
+    throw new Error("Failed to list document pages");
+  }
+
+  return (data ?? []) as RequirementPage[];
+};
+
+export const getCandidateById = async (
+  candidateId: string
+): Promise<RequirementCandidate | null> => {
+  const supabase = createSupabaseServiceRoleClient();
+  const { data, error } = await supabase
+    .from("requirement_candidates")
+    .select("*")
+    .eq("id", candidateId)
+    .maybeSingle();
+
+  if (error) {
+    console.error("Failed to load requirement candidate", error);
+    throw new Error("Failed to load requirement candidate");
+  }
+
+  return (data as RequirementCandidate) ?? null;
+};
+
+export const insertRequirementCandidates = async (
+  candidates: Database["public"]["Tables"]["requirement_candidates"]["Insert"][]
+): Promise<void> => {
+  if (!candidates.length) {
+    return;
+  }
+
+  const supabase = createSupabaseServiceRoleClient();
+  const now = new Date().toISOString();
+
+  const payload = candidates.map((candidate) => ({
+    status: candidate.status ?? "draft",
+    created_at: candidate.created_at ?? now,
+    ...candidate,
+  }));
+
+  const { error } = await supabase.from("requirement_candidates").insert(payload);
+
+  if (error) {
+    console.error("Failed to insert requirement candidates", error);
+    throw new Error("Failed to insert requirement candidates");
+  }
+};
+
+export const markDocumentPageProcessed = async (
+  pageId: string,
+  updates: Database["public"]["Tables"]["document_pages"]["Update"]
+): Promise<void> => {
+  const supabase = createSupabaseServiceRoleClient();
+  const payload: Database["public"]["Tables"]["document_pages"]["Update"] = {
+    processed_at: new Date().toISOString(),
+    ...updates,
+  } as Database["public"]["Tables"]["document_pages"]["Update"];
+
+  const { error } = await supabase
+    .from("document_pages")
+    .update(payload)
+    .eq("id", pageId);
+
+  if (error) {
+    console.error("Failed to mark document page processed", error);
+    throw new Error("Failed to mark document page processed");
+  }
+};
+
+export const updateCandidateStatus = async (
+  candidateId: string,
+  status: string,
+  updates: Partial<Database["public"]["Tables"]["requirement_candidates"]["Update"]> = {}
+): Promise<void> => {
+  const supabase = createSupabaseServiceRoleClient();
+
+  const { error } = await supabase
+    .from("requirement_candidates")
+    .update({
+      status,
+      ...updates,
+    })
+    .eq("id", candidateId);
+
+  if (error) {
+    console.error("Failed to update candidate status", error);
+    throw new Error("Failed to update candidate status");
+  }
+};
+
+export const updateCandidate = async (
+  candidateId: string,
+  updates: Database["public"]["Tables"]["requirement_candidates"]["Update"]
+): Promise<RequirementCandidate | null> => {
+  const supabase = createSupabaseServiceRoleClient();
+
+  const { data, error } = await supabase
+    .from("requirement_candidates")
+    .update({
+      ...updates,
+    })
+    .eq("id", candidateId)
+    .select()
+    .maybeSingle();
+
+  if (error) {
+    console.error("Failed to update candidate", error);
+    throw new Error("Failed to update candidate");
+  }
+
+  return (data as RequirementCandidate) ?? null;
+};
+
+export const markDocumentPageFailed = async (
+  pageId: string,
+  errorMessage: string
+): Promise<void> => {
+  const supabase = createSupabaseServiceRoleClient();
+
+  const { error } = await supabase
+    .from("document_pages")
+    .update({
+      status: "failed",
+      error: errorMessage,
+    })
+    .eq("id", pageId);
+
+  if (error) {
+    console.error("Failed to mark document page failed", error);
+    throw new Error("Failed to mark document page failed");
+  }
+};
+
+export const updateDocumentStatus = async (
+  documentId: string,
+  status: string,
+  updates: Partial<Database["public"]["Tables"]["documents"]["Update"]> = {}
+): Promise<void> => {
+  const supabase = createSupabaseServiceRoleClient();
+
+  const { error } = await supabase
+    .from("documents")
+    .update({
+      status,
+      updated_at: new Date().toISOString(),
+      ...updates,
+    })
+    .eq("id", documentId);
+
+  if (error) {
+    console.error("Failed to update document status", error);
+    throw new Error("Failed to update document status");
+  }
+};
+
+export const setDocumentHiddenState = async (
+  documentId: string,
+  hidden: boolean
+): Promise<void> => {
+  const supabase = createSupabaseServiceRoleClient();
+  const now = hidden ? new Date().toISOString() : null;
+
+  const { error } = await supabase
+    .from("documents")
+    .update({
+      hidden_at: now,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", documentId);
+
+  if (error) {
+    console.error("Failed to update document hidden state", error);
+    throw new Error("Failed to update document hidden state");
+  }
+};
+
+export const insertRequirementSource = async (
+  payload: Database["public"]["Tables"]["requirement_sources"]["Insert"]
+): Promise<void> => {
+  const supabase = createSupabaseServiceRoleClient();
+
+  const { error } = await supabase
+    .from("requirement_sources")
+    .insert({
+      created_at: new Date().toISOString(),
+      ...payload,
+    });
+
+  if (error) {
+    console.error("Failed to insert requirement source", error);
+    throw new Error("Failed to insert requirement source");
+  }
+};
+
+export const promoteCandidateToRequirement = async (input: {
+  candidate: RequirementCandidate;
+  projectId: string;
+  userId: string;
+  title: string;
+  description: string;
+  type?: string | null;
+  priority?: number | null;
+  status?: string | null;
+}): Promise<Database["public"]["Tables"]["requirements"]["Row"]> => {
+  const requirement = await createRequirement({
+    projectId: input.projectId,
+    title: input.title,
+    description: input.description,
+    type: input.type ?? input.candidate.type,
+    priority: input.priority ?? null,
+    status: input.status ?? "analysis",
+    createdBy: input.userId,
+  });
+
+  if (!requirement) {
+    throw new Error("Failed to create requirement from candidate");
+  }
+
+  await insertRequirementSource({
+    requirement_id: requirement.id,
+    document_id: input.candidate.document_id,
+    page_id: input.candidate.page_id,
+    offset_start: null,
+    offset_end: null,
+  });
+
+  await updateCandidateStatus(input.candidate.id, "approved", {
+    requirement_id: requirement.id,
+    created_by: input.userId,
+  });
+
+  return requirement;
+};
+
+export const getQueuedDocumentPages = async (
+  limit: number
+): Promise<Database["public"]["Tables"]["document_pages"]["Row"][]> => {
+  const supabase = createSupabaseServiceRoleClient();
+  const { data, error } = await supabase
+    .from("document_pages")
+    .select("*")
+    .eq("status", "queued")
+    .order("created_at", { ascending: true })
+    .limit(limit);
+
+  if (error) {
+    console.error("Failed to load queued document pages", error);
+    throw new Error("Failed to load queued document pages");
+  }
+
+  return (data ?? []) as Database["public"]["Tables"]["document_pages"]["Row"][];
+};
+
+export const markPagesAsProcessing = async (pageIds: string[]): Promise<void> => {
+  if (!pageIds.length) {
+    return;
+  }
+
+  const supabase = createSupabaseServiceRoleClient();
+  const { error } = await supabase
+    .from("document_pages")
+    .update({
+      status: "processing",
+    })
+    .in("id", pageIds)
+    .eq("status", "queued");
+
+  if (error) {
+    console.error("Failed to mark pages as processing", error);
+    throw new Error("Failed to mark pages as processing");
+  }
+};
+
+export const hasPendingPagesForDocument = async (
+  documentId: string
+): Promise<boolean> => {
+  const supabase = createSupabaseServiceRoleClient();
+  const { count, error } = await supabase
+    .from("document_pages")
+    .select("id", { count: "exact", head: true })
+    .eq("document_id", documentId)
+    .in("status", ["queued", "processing"]);
+
+  if (error) {
+    console.error("Failed to count pending pages", error);
+    throw new Error("Failed to count pending pages");
+  }
+
+  return (count ?? 0) > 0;
+};
+
+export const recordDocumentProcessingEvent = async (
+  input: {
+    documentId: string;
+    pagesProcessed: number;
+    candidatesInserted: number;
+    status: string;
+    error?: string | null;
+    metadata?: Json | null;
+    startedAt?: string;
+    completedAt?: string | null;
+  }
+): Promise<void> => {
+  const supabase = createSupabaseServiceRoleClient();
+
+  const { error } = await supabase.from("document_processing_events").insert({
+    document_id: input.documentId,
+    pages_processed: input.pagesProcessed,
+    candidates_inserted: input.candidatesInserted,
+    status: input.status,
+    error: input.error ?? null,
+    metadata: input.metadata ?? null,
+    batch_started_at: input.startedAt ?? new Date().toISOString(),
+    batch_completed_at: input.completedAt ?? new Date().toISOString(),
+  });
+
+  if (error) {
+    console.error("Failed to record document processing event", error);
+  }
+};
 
 export const listRequirements = async (
   projectId: string

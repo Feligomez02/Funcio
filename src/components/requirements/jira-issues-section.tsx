@@ -361,7 +361,7 @@ export const RequirementJiraIssues = ({
 
   return (
     <div className="space-y-2">
-      <dt className="inline-flex items-center rounded-full bg-indigo-600 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-white">
+      <dt className="inline-flex items-center rounded-full bg-black px-3 py-1 text-xs font-semibold uppercase tracking-wide text-white">
         Linked JIRA issues
       </dt>
       <dd className="flex flex-col gap-3">
@@ -375,7 +375,7 @@ export const RequirementJiraIssues = ({
             disabled={isRefreshing}
             className="inline-flex items-center gap-1 rounded-md border border-slate-200 px-2.5 py-1 text-xs font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {isRefreshing ? "Refreshing…" : "Refresh issues"}
+            {isRefreshing ? "Refreshing..." : "Refresh issues"}
           </button>
         </div>
         {linkError ? <p className="text-xs text-rose-600">{linkError}</p> : null}
@@ -383,13 +383,13 @@ export const RequirementJiraIssues = ({
         {error ? <p className="text-xs text-rose-600">{error}</p> : null}
 
         {allowPush ? (
-          <div className="rounded-lg border border-amber-200 bg-amber-50/70 p-3 text-sm text-amber-900">
+          <div className="rounded-lg border border-slate-200 bg-white p-3 text-sm text-slate-700">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wide text-amber-700">
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-600">
                   Manual sync
                 </p>
-                <p className="text-xs text-amber-800">
+                <p className="text-xs text-slate-600">
                   Create or refresh a linked JIRA issue when this requirement is ready.
                 </p>
               </div>
@@ -402,14 +402,14 @@ export const RequirementJiraIssues = ({
               </Button>
             </div>
             {existingJiraLink ? (
-              <p className="mt-2 text-xs text-amber-800">
+              <p className="mt-2 text-xs text-slate-600">
                 Linked to{" "}
                 {existingJiraLink.url ? (
                   <a
                     href={existingJiraLink.url}
                     target="_blank"
                     rel="noreferrer"
-                    className="font-semibold underline decoration-amber-500/60 underline-offset-2"
+                    className="font-semibold underline decoration-slate-400 underline-offset-2"
                   >
                     {resolveLinkDisplayKey(existingJiraLink)}
                   </a>
@@ -437,7 +437,7 @@ export const RequirementJiraIssues = ({
               {links.map((link) => (
                 <li
                   key={link.id}
-                  className="flex flex-wrap items-center gap-3 rounded-md border border-slate-100 bg-slate-50/60 px-3 py-2"
+                  className="flex flex-wrap items-center gap-3 rounded-md border border-slate-200 bg-white px-3 py-2"
                 >
                   <a
                     href={link.url ?? undefined}
@@ -462,9 +462,9 @@ export const RequirementJiraIssues = ({
                       type="button"
                       onClick={() => handleRemoveLink(link)}
                       disabled={removingLinkId === link.id}
-                      className="inline-flex items-center rounded-md border border-slate-200 px-2 py-1 text-xs font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
+                      className="inline-flex items-center rounded-md border border-slate-300 px-2 py-1 text-xs font-medium text-slate-700 transition hover:bg-black hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
                     >
-                      {removingLinkId === link.id ? "Removing…" : "Remove"}
+                      {removingLinkId === link.id ? "Removing..." : "Remove"}
                     </button>
                   ) : null}
                 </li>
@@ -480,12 +480,12 @@ export const RequirementJiraIssues = ({
         </div>
 
         {suggestedIssue ? (
-          <div className="rounded-lg border border-indigo-300 bg-indigo-50/60 p-3 text-sm text-slate-800">
+          <div className="rounded-lg border border-slate-200 bg-white p-3 text-sm text-slate-800">
             <div className="flex flex-wrap items-center justify-between gap-3">
-              <p className="text-xs font-semibold uppercase tracking-wide text-indigo-600">
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-600">
                 Suggested link
               </p>
-              <span className="rounded-full bg-indigo-100 px-2 py-0.5 text-[11px] font-medium text-indigo-700">
+              <span className="rounded-full bg-slate-900/5 px-2 py-0.5 text-[11px] font-medium text-slate-700">
                 {formatMatchPercentage(suggestedIssue.matchScore)}
               </span>
             </div>
@@ -493,7 +493,7 @@ export const RequirementJiraIssues = ({
               href={suggestedIssue.url}
               target="_blank"
               rel="noreferrer"
-              className="mt-2 flex items-center gap-3 rounded-md border border-indigo-200 bg-white/70 px-3 py-2 transition hover:bg-white"
+              className="mt-2 flex items-center gap-3 rounded-md border border-slate-200 bg-white px-3 py-2 transition hover:bg-slate-50"
             >
               <span className="font-semibold text-slate-900">{suggestedIssue.key}</span>
               <span className="truncate text-slate-700">{suggestedIssue.summary}</span>
@@ -512,12 +512,12 @@ export const RequirementJiraIssues = ({
                   disabled={
                     isIssueLinked(suggestedIssue) || isLinkingIssueId === suggestedIssue.id
                   }
-                  className="inline-flex items-center rounded-md border border-indigo-200 bg-white px-3 py-1 text-xs font-medium text-indigo-700 transition hover:bg-indigo-600 hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
+                  className="inline-flex items-center rounded-md border border-slate-300 bg-white px-3 py-1 text-xs font-medium text-slate-700 transition hover:bg-black hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {isIssueLinked(suggestedIssue)
                     ? "Already linked"
                     : isLinkingIssueId === suggestedIssue.id
-                    ? "Linking…"
+                    ? "Linking..."
                     : "Link issue"}
                 </button>
               </div>
@@ -558,12 +558,12 @@ export const RequirementJiraIssues = ({
                         type="button"
                         onClick={() => handleLinkIssue(issue)}
                         disabled={linked || isLinkingIssueId === issue.id}
-                        className="inline-flex items-center rounded-md border border-slate-200 px-2 py-1 text-xs font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
-                      >
+                        className="inline-flex items-center rounded-md border border-slate-300 px-2 py-1 text-xs font-medium text-slate-700 transition hover:bg-black hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
+                    >
                         {linked
                           ? "Already linked"
                           : isLinkingIssueId === issue.id
-                          ? "Linking…"
+                    ? "Linking..."
                           : "Link issue"}
                       </button>
                     ) : null}
@@ -610,7 +610,7 @@ export const RequirementJiraIssues = ({
               Projects listed here come from the integration configured for this project.
             </p>
             {projectOptions.length === 0 ? (
-              <p className="text-[11px] text-amber-700">
+              <p className="text-[11px] text-slate-500">
                 Configure available JIRA projects in the project integrations panel.
               </p>
             ) : null}
@@ -628,8 +628,8 @@ export const RequirementJiraIssues = ({
                   onClick={() => setIssueType(preset)}
                   className={`rounded-full px-3 py-1 text-xs font-medium transition ${
                     issueType === preset
-                      ? "bg-indigo-600 text-white"
-                      : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                      ? "border border-black bg-black text-white"
+                      : "border border-slate-300 bg-white text-slate-700 hover:bg-slate-100"
                   }`}
                 >
                   {preset}
@@ -658,8 +658,8 @@ export const RequirementJiraIssues = ({
             <Button type="submit" disabled={isPushing}>
               {isPushing
                 ? existingJiraLink
-                  ? "Updating…"
-                  : "Creating…"
+                  ? "Updating..."
+                  : "Creating..."
                 : existingJiraLink
                 ? "Re-sync to JIRA"
                 : "Push to JIRA"}

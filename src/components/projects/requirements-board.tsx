@@ -263,7 +263,7 @@ export const RequirementsBoard = ({
 
       {columns.unassigned.length > 0 ? (
         <Card
-          className="flex w-80 shrink-0 flex-col gap-4 border-2 border-amber-200 bg-amber-50/80 p-4 backdrop-blur-sm"
+          className="flex w-80 shrink-0 flex-col gap-4 border border-slate-300 bg-white p-4"
           onDragOver={handleDragOver}
           onDrop={(event) => handleDrop(event, null)}
         >

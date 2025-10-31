@@ -284,6 +284,7 @@ const ProjectPage = async ({ params }: ProjectPageProps) => {
         canManageMembers={role === "admin"}
         canManageIntegrations={role === "admin"}
         canManageRequirementLinks={role === "admin"}
+        canImportFromPdf={role === "admin"}
         dictionary={dictionary.projectPage}
         requirementFormCopy={dictionary.requirementForm}
         projectMembersCopy={dictionary.projectMembersCard}

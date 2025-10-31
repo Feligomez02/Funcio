@@ -306,12 +306,42 @@ export const POST = async (
     );
   } catch (error) {
     if (error instanceof JiraRequestError) {
-      return NextResponse.json({ error: error.message }, { status: error.status });
+      const detailMessage =
+        error.message && error.message.length > 0
+          ? error.message
+          : "JIRA request failed.";
+
+      if (error.status >= 500) {
+        console.warn("JIRA service error", {
+          status: error.status,
+          message: detailMessage,
+        });
+      }
+
+      return NextResponse.json(
+        {
+          error: "JIRA request failed",
+          details: detailMessage,
+          status: error.status,
+          retryable: error.status >= 500,
+        },
+        { status: error.status }
+      );
     }
+
+    const fallbackMessage =
+      error instanceof Error && error.message
+        ? error.message.slice(0, 500)
+        : "Unknown error.";
 
     console.error("Failed to push requirement to JIRA", error);
     return NextResponse.json(
-      { error: "Failed to push requirement to JIRA" },
+      {
+        error: "Failed to push requirement to JIRA",
+        details: fallbackMessage,
+        status: 502,
+        retryable: true,
+      },
       { status: 502 }
     );
   }

@@ -312,8 +312,8 @@ export const EditRequirementForm = ({
         </div>
       </div>
       {aiTypeSuggestion ? (
-        <div className="rounded-lg border border-amber-200 bg-amber-50/70 p-4 text-sm text-amber-900">
-          <h4 className="font-semibold text-amber-800">{typeSuggestionCopy.title}</h4>
+        <div className="rounded-lg border border-slate-200 bg-white p-4 text-sm text-slate-700">
+          <h4 className="font-semibold text-slate-800">{typeSuggestionCopy.title}</h4>
           <p className="mt-1">
             {typeSuggestionCopy.confidenceLabel}:{" "}
             {typeof aiTypeConfidence === "number"
@@ -344,9 +344,9 @@ export const EditRequirementForm = ({
             >
               {type === aiTypeSuggestion || typeSuggestionApplied
                 ? typeSuggestionCopy.appliedLabel
-                : typeSuggestionCopy.applyButton}
+              : typeSuggestionCopy.applyButton}
             </Button>
-            <p className="text-[11px] text-amber-700">
+            <p className="text-[11px] text-slate-500">
               {typeSuggestionCopy.reminder}
             </p>
           </div>

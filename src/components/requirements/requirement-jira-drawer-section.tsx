@@ -83,7 +83,7 @@ export const RequirementJiraDrawerSection = ({
   }, [projectKey, requirementId]);
 
   return (
-    <Card className="space-y-4 border border-slate-200 bg-slate-50 p-4">
+    <Card className="space-y-4 border border-slate-200 bg-white p-4">
       <div>
         <h3 className="text-sm font-semibold text-slate-900">JIRA links</h3>
         <p className="text-xs text-slate-500">

@@ -212,6 +212,216 @@ export interface Database {
         };
         Relationships: [];
       };
+      documents: {
+        Row: {
+          id: string;
+          project_id: string;
+          name: string;
+          storage_bucket: string | null;
+          storage_path: string;
+          pages: number | null;
+          source_hash: string | null;
+          language: string | null;
+          status: string;
+          uploaded_by: string | null;
+          created_at: string | null;
+          updated_at: string | null;
+          last_processed_at: string | null;
+          last_ocr_error: string | null;
+          batches_processed: number | null;
+          candidates_imported: number | null;
+          hidden_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          project_id: string;
+          name: string;
+          storage_bucket?: string | null;
+          storage_path: string;
+          pages?: number | null;
+          source_hash?: string | null;
+          language?: string | null;
+          status?: string;
+          uploaded_by?: string | null;
+          created_at?: string | null;
+          updated_at?: string | null;
+          last_processed_at?: string | null;
+          last_ocr_error?: string | null;
+          batches_processed?: number | null;
+          candidates_imported?: number | null;
+          hidden_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          project_id?: string;
+          name?: string;
+          storage_bucket?: string | null;
+          storage_path?: string;
+          pages?: number | null;
+          source_hash?: string | null;
+          language?: string | null;
+          status?: string;
+          uploaded_by?: string | null;
+          created_at?: string | null;
+          updated_at?: string | null;
+          last_processed_at?: string | null;
+          last_ocr_error?: string | null;
+          batches_processed?: number | null;
+          candidates_imported?: number | null;
+          hidden_at?: string | null;
+        };
+        Relationships: [];
+      };
+      document_pages: {
+        Row: {
+          id: string;
+          document_id: string;
+          page_number: number;
+          status: string;
+          text: string | null;
+          ocr_confidence: number | null;
+          error: string | null;
+          processed_at: string | null;
+          created_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          document_id: string;
+          page_number: number;
+          status?: string;
+          text?: string | null;
+          ocr_confidence?: number | null;
+          error?: string | null;
+          processed_at?: string | null;
+          created_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          document_id?: string;
+          page_number?: number;
+          status?: string;
+          text?: string | null;
+          ocr_confidence?: number | null;
+          error?: string | null;
+          processed_at?: string | null;
+          created_at?: string | null;
+        };
+        Relationships: [];
+      };
+      requirement_candidates: {
+        Row: {
+          id: string;
+          document_id: string;
+          page_id: string | null;
+          project_id: string;
+          text: string;
+          type: string | null;
+          confidence: number | null;
+          rationale: string | null;
+          status: string;
+          dedupe_group_id: string | null;
+          created_at: string | null;
+          created_by: string | null;
+          requirement_id: string | null;
+        };
+        Insert: {
+          id?: string;
+          document_id: string;
+          page_id?: string | null;
+          project_id: string;
+          text: string;
+          type?: string | null;
+          confidence?: number | null;
+          rationale?: string | null;
+          status?: string;
+          dedupe_group_id?: string | null;
+          created_at?: string | null;
+          created_by?: string | null;
+          requirement_id?: string | null;
+        };
+        Update: {
+          id?: string;
+          document_id?: string;
+          page_id?: string | null;
+          project_id?: string;
+          text?: string;
+          type?: string | null;
+          confidence?: number | null;
+          rationale?: string | null;
+          status?: string;
+          dedupe_group_id?: string | null;
+          created_at?: string | null;
+          created_by?: string | null;
+          requirement_id?: string | null;
+        };
+        Relationships: [];
+      };
+      requirement_sources: {
+        Row: {
+          requirement_id: string;
+          document_id: string;
+          page_id: string | null;
+          offset_start: number | null;
+          offset_end: number | null;
+          created_at: string | null;
+        };
+        Insert: {
+          requirement_id: string;
+          document_id: string;
+          page_id?: string | null;
+          offset_start?: number | null;
+          offset_end?: number | null;
+          created_at?: string | null;
+        };
+        Update: {
+          requirement_id?: string;
+          document_id?: string;
+          page_id?: string | null;
+          offset_start?: number | null;
+          offset_end?: number | null;
+          created_at?: string | null;
+        };
+        Relationships: [];
+      };
+      document_processing_events: {
+        Row: {
+          id: string;
+          document_id: string;
+          batch_started_at: string;
+          batch_completed_at: string | null;
+          pages_processed: number;
+          candidates_inserted: number;
+          status: string;
+          error: string | null;
+          metadata: Json | null;
+          created_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          document_id: string;
+          batch_started_at?: string;
+          batch_completed_at?: string | null;
+          pages_processed: number;
+          candidates_inserted: number;
+          status: string;
+          error?: string | null;
+          metadata?: Json | null;
+          created_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          document_id?: string;
+          batch_started_at?: string;
+          batch_completed_at?: string | null;
+          pages_processed?: number;
+          candidates_inserted?: number;
+          status?: string;
+          error?: string | null;
+          metadata?: Json | null;
+          created_at?: string | null;
+        };
+        Relationships: [];
+      };
       audit_logs: {
         Row: {
           id: string;

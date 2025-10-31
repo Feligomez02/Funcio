@@ -80,3 +80,16 @@ export const assertProjectAccess = async (
 
   return role;
 };
+
+export const requireAdmin = async () => {
+  const user = await requireAuthenticatedUser();
+
+  // TODO: replace with actual admin detection (e.g. project_members or metadata).
+  const isAdmin = user.app_metadata?.role === "admin";
+
+  if (!isAdmin) {
+    throw new Error("Forbidden");
+  }
+
+  return user;
+};

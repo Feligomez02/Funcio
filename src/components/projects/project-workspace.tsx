@@ -16,6 +16,8 @@ import { ProjectMembersCard } from "@/components/projects/project-members-card";
 import { ProjectIntegrationsCard } from "@/components/projects/project-integrations-card";
 import { ProjectOverflowMenu } from "@/components/projects/project-overflow-menu";
 import { RequirementJiraDrawerSection } from "@/components/requirements/requirement-jira-drawer-section";
+import { RequirementsImportCard } from "@/components/requirements/import-from-pdf-card";
+import { RequirementCandidatesPanel } from "@/components/requirements/requirement-candidates-panel";
 import type { ProjectMemberSummary } from "@/lib/data/project-members";
 import type {
   ProjectMembersCardDictionary,
@@ -27,6 +29,7 @@ import {
   REQUIREMENT_STATUS_VALUES,
   type RequirementStatusValue,
 } from "@/components/requirements/options";
+import { PageHeader } from "@/components/layout/page-header";
 
 type RequirementRecord = {
   id: string;
@@ -68,6 +71,7 @@ type ProjectWorkspaceProps = {
   canManageMembers: boolean;
   canManageIntegrations: boolean;
   canManageRequirementLinks: boolean;
+  canImportFromPdf: boolean;
   dictionary: ProjectPageDictionary;
   requirementFormCopy: RequirementFormDictionary;
   projectMembersCopy: ProjectMembersCardDictionary;
@@ -108,6 +112,7 @@ export const ProjectWorkspace = ({
   canManageMembers,
   canManageIntegrations,
   canManageRequirementLinks,
+  canImportFromPdf,
   dictionary,
   requirementFormCopy,
   projectMembersCopy,
@@ -147,11 +152,6 @@ export const ProjectWorkspace = ({
       id: status.id,
       label: status.label,
       count: derivedStatusCounts[status.id] ?? 0,
-      palette: STATUS_COLOR_CLASSES[status.id] ?? {
-        border: "border-slate-200",
-        background: "bg-slate-50",
-        badge: "bg-slate-900 text-white",
-      },
     }));
   }, [derivedStatusCounts, statusMap]);
 
@@ -216,131 +216,162 @@ export const ProjectWorkspace = ({
     router.push(`/requirements/${requirementId}`);
   };
   return (
-    <div className="space-y-8">
-      <Card className="space-y-8 bg-gradient-to-br from-indigo-50 via-white to-amber-50 p-8 text-slate-900 shadow-md lg:p-10">
-        <div className="flex flex-wrap items-start justify-between gap-6">
-          <div className="max-w-2xl space-y-2">
-            <h1 className="text-2xl font-semibold text-slate-900">
-              {project.name ?? "Untitled project"}
-            </h1>
-            <p className="text-sm text-slate-600">
-              {project.description ?? dictionary.defaultDescription}
-            </p>
-          </div>
-          <div className="flex flex-col items-end gap-2 text-sm text-slate-500">
-            <div className="flex items-center gap-2">
-              {project.roleLabel ? (
-                <span className="rounded-full bg-indigo-600/10 px-3 py-1 text-xs font-semibold text-indigo-700 ring-1 ring-indigo-200">
-                  {dictionary.header.roleLabel}: {project.roleLabel}
-                </span>
-              ) : null}
-              <ProjectOverflowMenu
-                projectId={project.id}
-                name={project.name}
-                description={project.description}
-                canEdit={project.role === "admin"}
-                copy={dictionary.menu}
-                onUpdated={() => router.refresh()}
-                onDeleted={() => {
-                  router.push("/projects");
-                  router.refresh();
-                }}
-              />
-            </div>
-            {project.updatedAt ? (
-              <span className="text-xs text-slate-400">
-                {dictionary.header.updatedLabel.replace(
-                  "{value}",
-                  formatDateTime(project.updatedAt) ?? "--"
-                )}
+    <div className="mx-auto flex max-w-7xl flex-col gap-8 px-4 pb-12">
+      <PageHeader
+        title={project.name ?? "Untitled project"}
+        description={project.description ?? dictionary.defaultDescription}
+        backHref="/projects"
+        backLabel="Volver a proyectos"
+        actions={
+          <div className="flex items-center gap-2">
+            {project.roleLabel ? (
+              <span className="rounded-full border border-slate-300 bg-white px-3 py-1 text-xs font-semibold text-slate-700">
+                {dictionary.header.roleLabel}: {project.roleLabel}
               </span>
             ) : null}
+            <ProjectOverflowMenu
+              projectId={project.id}
+              name={project.name}
+              description={project.description}
+              canEdit={project.role === "admin"}
+              copy={dictionary.menu}
+              onUpdated={() => router.refresh()}
+              onDeleted={() => {
+                router.push("/projects");
+                router.refresh();
+              }}
+            />
           </div>
-        </div>
+        }
+      />
 
-        <div className="flex flex-wrap gap-3">
-          <Button
-            type="button"
-            onClick={() =>
-              setDrawerState({
-                mode: "create",
-                initialStatus: "analysis",
-              })
-            }
-            disabled={!canCreateRequirements}
-          >
-            {dictionary.actions.newRequirement}
-          </Button>
-          <Button
-            type="button"
-            variant="secondary"
-            onClick={() => setIsMembersOpen(true)}
-            disabled={!canManageMembers}
-          >
-            {dictionary.actions.inviteMember}
-          </Button>
-          <Button
-            type="button"
-            variant="tertiary"
-            onClick={() => setIsIntegrationsOpen(true)}
-            disabled={!canManageIntegrations}
-          >
-            {dictionary.actions.manageIntegrations}
-          </Button>
-        </div>
-
-        <div className="space-y-4">
-          <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-            {dictionary.metrics.title}
-          </span>
-          <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-4">
-            {metricEntries.map((metric) => (
-              <Card
-                key={metric.id}
-                className={`border ${metric.palette.border} ${metric.palette.background} p-4 text-slate-900 shadow-sm lg:p-5`}
-              >
-                <div className="flex items-center justify-between">
-                  <span
-                    className={`rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide ${metric.palette.badge}`}
-                  >
-                    {metric.label}
-                  </span>
-                  <p className="text-2xl font-semibold text-slate-900">{metric.count}</p>
-                </div>
-              </Card>
-            ))}
-          </div>
-        </div>
-
-        <Card className="space-y-4 border border-amber-200 bg-gradient-to-r from-amber-50 via-white to-emerald-50 p-6 text-slate-700 shadow-sm">
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div>
-              <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                {dictionary.header.jiraStatusLabel}
-              </span>
-              <p className="text-sm text-slate-600">{connectionMessage}</p>
-            </div>
-            <span
-              className={`rounded-full px-3 py-1 text-xs font-semibold ${connectionBadgeClass}`}
+      <section className="grid gap-6 lg:grid-cols-[minmax(0,1.8fr)_minmax(0,1fr)]">
+        <Card className="space-y-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          <div className="flex flex-wrap gap-3">
+            <Button
+              type="button"
+              onClick={() =>
+                setDrawerState({
+                  mode: "create",
+                  initialStatus: "analysis",
+                })
+              }
+              disabled={!canCreateRequirements}
             >
-              {connectionStateLabel}
-            </span>
+              {dictionary.actions.newRequirement}
+            </Button>
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => setIsMembersOpen(true)}
+              disabled={!canManageMembers}
+            >
+              {dictionary.actions.inviteMember}
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => setIsIntegrationsOpen(true)}
+              disabled={!canManageIntegrations}
+              className="px-3 py-1.5 text-xs text-slate-600 hover:text-slate-900"
+            >
+              {dictionary.actions.manageIntegrations}
+            </Button>
           </div>
-          <div className="flex flex-wrap gap-3 text-xs text-slate-500">
-            <span>
-              {dictionary.header.sourceLabel}: {credentialsSourceLabel}
+
+          <div className="space-y-4">
+            <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+              {dictionary.metrics.title}
             </span>
-            <span>
-              {dictionary.header.lastValidatedLabel.replace(
-                "{value}",
-                formatDateTime(project.jira.lastValidatedAt) ?? "--"
-              )}
-            </span>
+            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+              {metricEntries.map((metric) => (
+                <div
+                  key={metric.id}
+                  className="rounded-2xl border border-slate-200 bg-slate-50 p-5 shadow-sm"
+                >
+                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                    {metric.label}
+                  </p>
+                  <p className="mt-2 text-3xl font-semibold text-slate-900">
+                    {metric.count}
+                  </p>
+                </div>
+              ))}
+            </div>
           </div>
         </Card>
-      </Card>
 
-      <section className="space-y-4">
+        <div className="space-y-4">
+          <Card className="space-y-3 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  {dictionary.header.jiraStatusLabel}
+                </p>
+                <p className="text-sm text-slate-600">{connectionMessage}</p>
+              </div>
+              <span
+                className={`rounded-full px-3 py-1 text-xs font-semibold ${connectionBadgeClass}`}
+              >
+                {connectionStateLabel}
+              </span>
+            </div>
+            <ul className="space-y-1 text-xs text-slate-500">
+              <li>
+                {dictionary.header.sourceLabel}: {credentialsSourceLabel}
+              </li>
+              <li>
+                {dictionary.header.lastValidatedLabel.replace(
+                  "{value}",
+                  formatDateTime(project.jira.lastValidatedAt) ?? "--",
+                )}
+              </li>
+            </ul>
+          </Card>
+
+          <Card className="space-y-3 rounded-2xl border border-slate-200 bg-white p-5 text-sm text-slate-600 shadow-sm">
+            <p className="text-base font-semibold text-slate-900">
+              Flujo de trabajo recomendado
+            </p>
+            <p>
+              Importa documentos, revisa los candidatos sugeridos y promueve solo
+              aquellos que aporten valor al backlog. Usa el tablero para coordinar
+              el estado y sincronizarlos con Jira.
+            </p>
+            <p className="text-xs text-slate-500">
+              Consejo: mantén los documentos cortos para acelerar las iteraciones de OCR.
+            </p>
+          </Card>
+        </div>
+      </section>
+
+      {canImportFromPdf ? (
+        <section className="space-y-6">
+          <div className="grid gap-6 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
+            <RequirementsImportCard
+              projectId={project.id}
+              projectName={project.name}
+            />
+            <Card className="space-y-3 rounded-2xl border border-slate-200 bg-white p-5 text-sm text-slate-600 shadow-sm">
+              <p className="text-base font-semibold text-slate-900">
+                Pipeline de candidatos
+              </p>
+              <p>
+                Cada documento importado crea un conjunto de requerimientos preliminares.
+                Revísalos y edítalos antes de integrarlos al tablero principal.
+              </p>
+              <p className="text-xs text-slate-500">
+                Una vez aprobados, los verás a continuación listos para su promoción o push a Jira.
+              </p>
+            </Card>
+          </div>
+          <RequirementCandidatesPanel projectId={project.id} />
+        </section>
+      ) : (
+        <RequirementCandidatesPanel projectId={project.id} />
+      )}
+
+      <section id="requirements-board" className="space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold text-slate-900">
             {dictionary.board.title}

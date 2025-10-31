@@ -181,7 +181,7 @@ export const ProjectsOverview = ({
             className="text-sm"
           />
           {filteredProjects.length === 0 ? (
-            <p className="rounded-lg bg-amber-50/80 px-3 py-6 text-sm text-amber-800">
+            <p className="rounded-lg border border-slate-200 bg-white px-3 py-6 text-sm text-slate-600">
               {sidebarCopy.empty}
             </p>
           ) : (
@@ -191,22 +191,22 @@ export const ProjectsOverview = ({
                 const roleLabel =
                   roleLabels[project.role as keyof typeof roleLabels] ?? project.role;
 
-                return (
-                  <button
-                    key={project.id}
-                    type="button"
-                    onClick={() => setSelectedProjectId(project.id)}
-                    className={`flex w-full flex-col rounded-lg border px-3 py-2 text-left transition ${
-                      isSelected
-                        ? "border-indigo-500 bg-gradient-to-r from-indigo-600 via-sky-500 to-emerald-500 text-white shadow-lg shadow-indigo-500/30"
-                        : "border-transparent text-slate-600 hover:border-slate-200 hover:bg-slate-50/80 hover:text-slate-900"
-                    }`}
-                  >
-                    <span className="truncate text-sm font-semibold">
-                      {project.name ?? dictionary.card.titleFallback}
-                    </span>
-                    <span
-                      className={`mt-1 text-xs ${
+                  return (
+                    <button
+                      key={project.id}
+                      type="button"
+                      onClick={() => setSelectedProjectId(project.id)}
+                      className={`flex w-full flex-col rounded-lg border px-3 py-2 text-left transition ${
+                        isSelected
+                          ? "border border-black bg-black text-white shadow-lg shadow-slate-600/20"
+                          : "border border-transparent text-slate-600 hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900"
+                      }`}
+                    >
+                      <span className="truncate text-sm font-semibold">
+                        {project.name ?? dictionary.card.titleFallback}
+                      </span>
+                      <span
+                        className={`mt-1 text-xs ${
                         isSelected ? "text-white/80" : "text-slate-400"
                       }`}
                     >
@@ -245,7 +245,7 @@ export const ProjectsOverview = ({
                 </p>
               </div>
               <div className="flex flex-col items-end gap-2">
-                <span className="rounded-full bg-indigo-600/10 px-3 py-1 text-xs font-semibold text-indigo-700 ring-1 ring-indigo-200">
+                <span className="rounded-full border border-slate-300 bg-white px-3 py-1 text-xs font-semibold text-slate-700">
                   {overviewCopy.roleLabel}:{" "}
                   {roleLabels[
                     selectedProject.role as keyof ProjectMembersCardDictionary["roles"]
@@ -272,14 +272,14 @@ export const ProjectsOverview = ({
               <Button
                 type="button"
                 variant="ghost"
-                className="text-indigo-700 hover:text-indigo-800"
+                className="text-slate-700 hover:text-slate-900"
                 onClick={handleViewAllRequirements}
               >
                 {overviewCopy.actions.viewAllRequirements}
               </Button>
             </div>
 
-            <Card className="space-y-4 border border-sky-200 bg-sky-50/70 p-5">
+            <Card className="space-y-4 border border-slate-200 bg-white p-5">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
                   <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
@@ -312,7 +312,7 @@ export const ProjectsOverview = ({
               </div>
             </Card>
 
-            <Card className="space-y-4 border border-indigo-200 bg-indigo-50/60 p-5">
+            <Card className="space-y-4 border border-slate-200 bg-white p-5">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
                   {overviewCopy.metricsTitle}
@@ -323,7 +323,7 @@ export const ProjectsOverview = ({
               </div>
 
               {selectedProject.totalRequirements === 0 ? (
-                <p className="rounded-lg bg-amber-50/80 px-4 py-6 text-sm text-amber-800">
+                <p className="rounded-lg border border-slate-200 bg-white px-4 py-6 text-sm text-slate-600">
                   {overviewCopy.metricsEmpty}
                 </p>
               ) : (
@@ -365,14 +365,14 @@ export const ProjectsOverview = ({
                 <Button
                   type="button"
                   variant="ghost"
-                  className="px-2 py-1 text-xs font-semibold text-indigo-700 hover:text-indigo-800"
+                  className="px-2 py-1 text-xs font-semibold text-slate-700 hover:text-slate-900"
                   onClick={handleViewAllRequirements}
                 >
                   {overviewCopy.actions.viewAllRequirements}
                 </Button>
               </div>
               {selectedProject.recentRequirements.length === 0 ? (
-                <p className="rounded-lg bg-amber-50/80 px-4 py-6 text-sm text-amber-800">
+                <p className="rounded-lg border border-slate-200 bg-white px-4 py-6 text-sm text-slate-600">
                   {overviewCopy.recentRequirementsEmpty}
                 </p>
               ) : (
