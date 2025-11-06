@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { I18nProvider } from "@/components/i18n/i18n-provider";
+import { SupabaseAuthListener } from "@/components/auth/supabase-auth-listener";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
 import { getRequestLocale } from "@/lib/i18n/get-locale";
 import "./globals.css";
@@ -35,6 +36,7 @@ export default async function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <I18nProvider locale={locale} dictionary={dictionary}>
+          <SupabaseAuthListener />
           {children}
         </I18nProvider>
       </body>

@@ -60,7 +60,7 @@ export const LoginForm = () => {
   };
 
   return (
-    <form className="space-y-6" onSubmit={handleSubmit}>
+    <form className="space-y-6" method="post" onSubmit={handleSubmit}>
       <div className="space-y-2">
         <label htmlFor="email" className="text-sm font-medium text-slate-700">
           Email
