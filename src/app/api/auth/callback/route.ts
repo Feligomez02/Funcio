@@ -10,8 +10,8 @@ type AuthCallbackPayload = {
   session: Session | null;
 };
 
-const createSupabaseClientForRoute = () => {
-  const cookieStore = cookies();
+const createSupabaseClientForRoute = async () => {
+  const cookieStore = await cookies();
 
   return createServerClient<Database>(
     env.NEXT_PUBLIC_SUPABASE_URL,
@@ -34,7 +34,7 @@ const createSupabaseClientForRoute = () => {
 };
 
 const persistSession = async (session: Session) => {
-  const supabase = createSupabaseClientForRoute();
+  const supabase = await createSupabaseClientForRoute();
 
   await supabase.auth.setSession({
     access_token: session.access_token,
@@ -43,7 +43,7 @@ const persistSession = async (session: Session) => {
 };
 
 const clearSession = async () => {
-  const supabase = createSupabaseClientForRoute();
+  const supabase = await createSupabaseClientForRoute();
   await supabase.auth.signOut();
 };
 
@@ -74,7 +74,7 @@ export async function POST(request: Request) {
       await persistSession(session);
     }
 
-    if (event === "SIGNED_OUT" || event === "USER_DELETED") {
+    if (event === "SIGNED_OUT") {
       await clearSession();
     }
   } catch (error) {

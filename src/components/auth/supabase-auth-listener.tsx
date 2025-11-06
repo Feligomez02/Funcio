@@ -11,7 +11,7 @@ const shouldSyncSession = (event: AuthLifecycleEvent) =>
   event === "SIGNED_IN" || event === "TOKEN_REFRESHED";
 
 const shouldClearSession = (event: AuthLifecycleEvent) =>
-  event === "SIGNED_OUT" || event === "USER_DELETED";
+  event === "SIGNED_OUT";
 
 const syncAuthToServer = async (event: AuthLifecycleEvent, session: Session | null) => {
   const payload = JSON.stringify({ event, session });

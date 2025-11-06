@@ -7,7 +7,7 @@ import { env } from "@/env";
 export const createSupabaseServerClient = async (): Promise<
   SupabaseClient<Database>
 > => {
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
 
   return createServerClient<Database>(
     env.NEXT_PUBLIC_SUPABASE_URL,
