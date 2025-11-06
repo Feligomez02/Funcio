@@ -16,7 +16,11 @@ const SECURITY_HEADERS: Array<[string, string]> = [
   ],
 ];
 
+const isPublicApiRoute = (pathname: string) =>
+  pathname === "/api/auth/callback";
+
 const isProtectedPath = (pathname: string) =>
+  !isPublicApiRoute(pathname) &&
   PROTECTED_PREFIXES.some((prefix) => pathname.startsWith(prefix));
 
 const isAuthRoute = (pathname: string) =>
