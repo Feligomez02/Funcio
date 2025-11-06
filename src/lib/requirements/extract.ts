@@ -69,6 +69,16 @@ function isLikelyRequirement(rawText: string): boolean {
     /^pendientes?/i,
     /^notas?/i,
     /^registro\s+de\s+cambios/i,
+    /^historia\s+de\s+usuario/i,
+    /^hu[-\s]*\d+/i,
+    /^introducci[oó]n/i,
+    /^objetivos?/i,
+    /^alcance/i,
+    /^definiciones?/i,
+    /^t[eé]rminos?/i,
+    /^referencias?/i,
+    /^an[eé]x?os?/i,
+    /^ap[eé]ndice/i,
   ];
   if (ignoredPrefixes.some((regex) => regex.test(lower))) {
     return false;
@@ -87,6 +97,28 @@ function isLikelyRequirement(rawText: string): boolean {
     /\bmetri(c|k)as\b/,
     /\bprioridad\b/,
     /\breserv(en|ar)\b/,
+    /\bsegurid(a|ad)\b/,
+    /\bdisponibilid(a|ad)\b/,
+    /\bconfidencialid(a|ad)\b/,
+    /\btrazabilid(a|ad)\b/,
+    /\brendimient(o|o)\b/,
+    /\busabilidad\b/,
+    /\bfuncionalidad\b/,
+    /\bcumplir\b/,
+    /\bgenerar\b/,
+    /\banalizar\b/,
+    /\bvisualizar\b/,
+    /\bimplementar\b/,
+    /\boptimizar\b/,
+    /\bvalidar\b/,
+    /\bverificar\b/,
+    /\breportar\b/,
+    /\bbuscar\b/,
+    /\bfiltros?\b/,
+    /\balertas?\b/,
+    /\bnotas?\b/,
+    /\btareas?\b/,
+    
   ];
 
   return requirementSignals.some((regex) => regex.test(lower));

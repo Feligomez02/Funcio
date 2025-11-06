@@ -154,6 +154,11 @@ export type RequirementFormDictionary = {
     success: string;
     error: string;
     typeChangeReasonRequired: string;
+    delete: string;
+    deleting: string;
+    deleteConfirm: string;
+    deleteError: string;
+    deleteHint: string;
   };
   requirementTypes: Record<string, string>;
   requirementStatuses: Record<string, string>;
@@ -323,3 +328,4 @@ export type Dictionary = {
   settingsPage: SettingsPageDictionary;
   auth: AuthDictionary;
 };
+

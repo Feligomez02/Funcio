@@ -1,5 +1,4 @@
 import { notFound, redirect } from "next/navigation";
-import { PageHeader } from "@/components/layout/page-header";
 import { ProjectWorkspace } from "@/components/projects/project-workspace";
 import { getSession, getProjectRole } from "@/lib/auth";
 import { getProjectById } from "@/lib/data/projects";
@@ -262,20 +261,7 @@ const ProjectPage = async ({ params }: ProjectPageProps) => {
 
   return (
     <div className="space-y-10">
-      <PageHeader
-        backHref="/projects"
-        backLabel={dictionary.projectPage.backToProjectsLabel}
-        title={project.name}
-        description={project.description ?? dictionary.projectPage.defaultDescription}
-        actions={
-          roleLabel ? (
-            <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700">
-              {roleLabel}
-            </span>
-          ) : null
-        }
-      />
-
+      
       <ProjectWorkspace
         project={projectSummary}
         requirements={normalizedRequirements}

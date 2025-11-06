@@ -26,33 +26,35 @@ export const AppShell = ({ userEmail, children }: AppShellProps) => {
     dictionary: { appShell },
   } = useI18n();
 
+  // Defensive: if translations are missing for any reason, fall back to sensible defaults
   const links = useMemo(
     () =>
       LINK_KEYS.map((link) => ({
         href: link.href,
-        label: appShell.nav[link.key] ?? link.key,
+        label: appShell?.nav?.[link.key] ?? link.key,
       })),
-    [appShell.nav]
+    // use optional chaining in dependency to avoid runtime when appShell is undefined
+    [appShell?.nav]
   );
 
   return (
     <div className="flex min-h-screen flex-col bg-slate-50">
       <header className="border-b border-slate-200/80 bg-white/70 backdrop-blur supports-[backdrop-filter]:bg-white/60">
         <div className="mx-auto flex w-full max-w-6xl items-center gap-6 px-6 py-4">
-          <Link
-            href="/"
-            className="flex items-center gap-2 text-base font-semibold text-slate-900"
-            aria-label={appShell.brand}
-          >
+            <Link
+              href="/"
+              className="flex items-center gap-2 text-base font-semibold text-slate-900"
+              aria-label={appShell?.brand ?? "Funcio"}
+            >
             <Image
               src="/images/funcio-logo.png"
-              alt={appShell.brand}
+              alt={appShell?.brand ?? "Funcio"}
               width={32}
               height={32}
               className="h-14 w-14"
               priority
             />
-            <span className="hidden sm:inline">{appShell.brand}</span>
+            <span className="hidden sm:inline">{appShell?.brand ?? "Funcio"}</span>
           </Link>
           <nav className="flex flex-1 items-center gap-3 text-sm text-slate-700">
             {links.map((link) => (
@@ -72,7 +74,10 @@ export const AppShell = ({ userEmail, children }: AppShellProps) => {
             <div className="ml-auto flex items-center gap-3">
               <LanguageToggle />
               <div className="flex items-center gap-3 pl-4 text-xs text-slate-500">
-                <span className="hidden sm:inline" aria-label={appShell.accountLabel}>
+                <span
+                  className="hidden sm:inline"
+                  aria-label={appShell?.accountLabel ?? "Account"}
+                >
                   {userEmail}
                 </span>
                 <SignOutButton />

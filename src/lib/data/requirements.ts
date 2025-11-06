@@ -717,3 +717,48 @@ export const updateRequirement = async (input: {
 
   return updatedRequirement;
 };
+
+export const deleteRequirement = async (input: {
+  requirementId: string;
+  projectId: string;
+  deletedBy: string;
+  reason?: string | null;
+}): Promise<boolean> => {
+  const supabase = createSupabaseServiceRoleClient();
+
+  const { data, error } = await supabase
+    .from("requirements")
+    .delete()
+    .eq("id", input.requirementId)
+    .eq("project_id", input.projectId)
+    .select()
+    .maybeSingle();
+
+  if (error) {
+    console.error("Unable to delete requirement", error);
+    return false;
+  }
+
+  if (data) {
+    await logAuditEvent({
+      userId: input.deletedBy,
+      action: "requirement.deleted",
+      entity: "requirement",
+      entityId: input.requirementId,
+      payload: {
+        projectId: input.projectId,
+      },
+    });
+
+    await recordRequirementHistory({
+      requirementId: input.requirementId,
+      projectId: input.projectId,
+      userId: input.deletedBy,
+      action: "deleted",
+      changedFields: [],
+      changeNote: input.reason ?? null,
+    });
+  }
+
+  return true;
+};

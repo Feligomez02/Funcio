@@ -1,7 +1,11 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getSession, getProjectRole } from "@/lib/auth";
-import { updateRequirement, getRequirementById } from "@/lib/data/requirements";
+import {
+  updateRequirement,
+  getRequirementById,
+  deleteRequirement,
+} from "@/lib/data/requirements";
 import { assertValidCsrf } from "@/lib/security/verify-csrf";
 
 const patchSchema = z.object({
@@ -22,6 +26,11 @@ const patchSchema = z.object({
   aiTypeConfidence: z.number().min(0).max(1).optional().nullable(),
   aiTypeReason: z.string().max(500).optional().nullable(),
   changeNote: z.string().max(500).optional().nullable(),
+});
+
+const deleteSchema = z.object({
+  projectId: z.string().uuid("projectId must be a valid UUID"),
+  reason: z.string().max(500).optional().nullable(),
 });
 
 export const PATCH = async (
@@ -117,4 +126,65 @@ export const PATCH = async (
   }
 
   return NextResponse.json(updated);
+};
+
+export const DELETE = async (
+  request: Request,
+  { params }: { params: Promise<{ requirementId: string }> }
+) => {
+  const session = await getSession();
+
+  if (!session) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const { requirementId } = await params;
+
+  if (!requirementId) {
+    return NextResponse.json({ error: "Missing requirementId" }, { status: 400 });
+  }
+
+  try {
+    await assertValidCsrf(request);
+  } catch {
+    return NextResponse.json({ error: "Invalid CSRF token" }, { status: 403 });
+  }
+
+  const raw = await request.json().catch(() => null);
+  const parsed = deleteSchema.safeParse(raw);
+
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: "Invalid payload", details: parsed.error.flatten() },
+      { status: 400 }
+    );
+  }
+
+  const role = await getProjectRole(parsed.data.projectId, session.user.id);
+
+  if (!role || role !== "admin") {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  const existing = await getRequirementById(requirementId);
+
+  if (!existing || existing.project_id !== parsed.data.projectId) {
+    return NextResponse.json({ error: "Requirement not found" }, { status: 404 });
+  }
+
+  const wasDeleted = await deleteRequirement({
+    requirementId,
+    projectId: parsed.data.projectId,
+    deletedBy: session.user.id,
+    reason: (parsed.data.reason ?? "").trim() || null,
+  });
+
+  if (!wasDeleted) {
+    return NextResponse.json(
+      { error: "Unable to delete requirement" },
+      { status: 500 }
+    );
+  }
+
+  return NextResponse.json({ ok: true });
 };

@@ -43,6 +43,7 @@ type EditRequirementFormProps = {
   };
   disabled?: boolean;
   onSuccess?: () => void;
+  onDelete?: () => void;
 };
 
 export const EditRequirementForm = ({
@@ -51,6 +52,7 @@ export const EditRequirementForm = ({
   initialValues,
   disabled,
   onSuccess,
+  onDelete,
 }: EditRequirementFormProps) => {
   const router = useRouter();
   const {
@@ -80,6 +82,7 @@ export const EditRequirementForm = ({
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [changeNote, setChangeNote] = useState<string>("");
   const originalTypeRef = useRef<RequirementTypeValue>(resolvedInitialType);
   const aiTypeSuggestion = isRequirementTypeValue(initialValues.aiTypeSuggestion)
@@ -100,6 +103,8 @@ export const EditRequirementForm = ({
         "Add a change note when you change the requirement type so the history stays clear.",
     };
   const [typeSuggestionApplied, setTypeSuggestionApplied] = useState(false);
+  const deleteHintCopy =
+    copy.edit?.deleteHint ?? "Deleting will permanently remove this requirement.";
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -177,6 +182,60 @@ export const EditRequirementForm = ({
     onSuccess?.();
   };
 
+  const handleDelete = async () => {
+    if (disabled) {
+      return;
+    }
+
+    const confirmationMessage =
+      copy.edit?.deleteConfirm ?? "Are you sure you want to delete this requirement?";
+    if (!window.confirm(confirmationMessage)) {
+      return;
+    }
+
+    setError(null);
+    setSuccess(null);
+    setIsDeleting(true);
+
+    try {
+      const reason = changeNote.trim().length > 0 ? changeNote.trim() : null;
+      const response = await fetchWithCsrf(`/api/requirements/${requirementId}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          projectId,
+          reason,
+        }),
+      });
+
+      if (!response.ok) {
+        const payload = await response.json().catch(() => ({}));
+        throw new Error(
+          (payload && typeof payload.error === "string"
+            ? payload.error
+            : copy.edit.deleteError) ?? copy.edit.deleteError,
+        );
+      }
+
+      if (onDelete) {
+        onDelete();
+      } else {
+        router.push(`/projects/${projectId}`);
+      }
+    } catch (err) {
+      console.error(err);
+      setError(
+        err instanceof Error && err.message.length > 0
+          ? err.message
+          : copy.edit.deleteError,
+      );
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   return (
     <form
       className="mx-auto flex w-full max-w-3xl flex-col gap-6"
@@ -230,7 +289,7 @@ export const EditRequirementForm = ({
           >
             {REQUIREMENT_TYPE_VALUES.map((value) => (
               <option key={value} value={value}>
-                {copy.requirementTypes[value] ?? value}
+                {copy.requirementTypes?.[value] ?? value}
               </option>
             ))}
           </Select>
@@ -262,7 +321,7 @@ export const EditRequirementForm = ({
           >
             {REQUIREMENT_STATUS_VALUES.map((value) => (
               <option key={value} value={value}>
-                {copy.requirementStatuses[value] ?? value}
+                {copy.requirementStatuses?.[value] ?? value}
               </option>
             ))}
           </Select>
@@ -376,9 +435,31 @@ export const EditRequirementForm = ({
           </Button>
         </div>
       </div>
+      {!disabled ? (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-slate-200 bg-slate-50/50 px-4 py-3">
+          <p className="text-xs text-slate-500">{deleteHintCopy}</p>
+          <Button
+            type="button"
+            variant="ghost"
+            className="text-rose-600 hover:bg-rose-50 hover:text-rose-700"
+            onClick={handleDelete}
+            disabled={isDeleting}
+          >
+            {isDeleting ? copy.edit.deleting : copy.edit.delete}
+          </Button>
+        </div>
+      ) : null}
       {disabled ? (
         <p className="text-xs text-slate-500">{copy.edit.disabledHint}</p>
       ) : null}
     </form>
   );
 };
+
+
+
+
+
+
+
+

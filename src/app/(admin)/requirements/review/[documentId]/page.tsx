@@ -161,7 +161,6 @@ export default function ReviewPage() {
         setDocument(payload.document);
         const pageMap = new Map<string, number>();
         payload.pages.forEach((page) => pageMap.set(page.id, page.page_number));
-        setPages(payload.pages);
         setCandidates(
           payload.candidates.map((candidate) => ({
             ...candidate,

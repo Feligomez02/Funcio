@@ -87,6 +87,24 @@ export const ImproveRequirement = ({
       reminder:
         "Review this suggestion in the Edit requirement dialog before changing the requirement type.",
     };
+  const deriveTitleAndDescription = (value: string) => {
+    const trimmed = value.trim();
+    if (!trimmed) {
+      return {
+        title: "Requirement",
+        description: "",
+      };
+    }
+    const sentences = trimmed.split(/\r?\n/).filter((line) => line.trim().length > 0);
+    const firstLine = sentences[0] ?? trimmed;
+    const normalizedTitle =
+      firstLine.length > 80 ? `${firstLine.slice(0, 77).trimEnd()}…` : firstLine;
+
+    return {
+      title: normalizedTitle,
+      description: trimmed,
+    };
+  };
 
   const handleImprove = async () => {
     setIsLoading(true);
@@ -126,7 +144,16 @@ export const ImproveRequirement = ({
     setIsApplying(true);
     setError(null);
     setSuccessMessage(null);
-    const improvedText = result.improvedText;
+    const improvedText = result.improvedText.trim();
+    const { title: improvedTitle, description: improvedDescription } =
+      deriveTitleAndDescription(improvedText);
+    const trimmedUserStory = result.userStory.trim();
+    const acceptanceList = result.acceptanceCriteria
+      .map((item) => item.trim())
+      .filter((item) => item.length > 0);
+    const issuesList = result.issues
+      .map((item) => item.trim())
+      .filter((item) => item.length > 0);
 
     const response = await fetchWithCsrf(`/api/requirements/${requirementId}`, {
       method: "PATCH",
@@ -135,14 +162,18 @@ export const ImproveRequirement = ({
       },
       body: JSON.stringify({
         projectId,
-        description: result.improvedText,
-        aiUserStory: result.userStory,
-        aiAcceptanceCriteria: result.acceptanceCriteria,
-        aiIssues: result.issues,
+        title: improvedTitle,
+        description: improvedDescription,
+        aiUserStory: trimmedUserStory.length > 0 ? trimmedUserStory : null,
+        aiAcceptanceCriteria: acceptanceList.length > 0 ? acceptanceList : null,
+        aiIssues: issuesList.length > 0 ? issuesList : null,
         aiConfidence: result.confidence,
         aiProvider: result.provider,
         aiLanguage: result.language,
         aiTokensUsed: result.tokensUsed ?? null,
+        aiTypeSuggestion: result.typeSuggestion ?? null,
+        aiTypeConfidence: result.typeConfidence ?? null,
+        aiTypeReason: result.typeReason ?? null,
         changeNote: "Applied AI suggestion",
       }),
     });
@@ -156,7 +187,7 @@ export const ImproveRequirement = ({
 
     setSuccessMessage("Requirement updated with AI suggestion.");
     setResult(null);
-    setText(improvedText);
+    setText(improvedDescription);
     setIsApplying(false);
     router.refresh();
   };

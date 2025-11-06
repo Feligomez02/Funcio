@@ -154,23 +154,30 @@ const dictionary: Dictionary = {
       error: "Unable to create requirement",
     },
     edit: {
+
       submit: "Save changes",
+
       submitting: "Updating...",
-    disabledHint: "Only analysts or admins can edit requirements.",
-    success: "Requirement updated successfully.",
-    error: "Unable to update requirement",
-    typeChangeReasonRequired:
-      "Add a change note explaining why the requirement type is changing.",
-  },
+      disabledHint: "Only analysts or admins can edit requirements.",
+      success: "Requirement updated successfully.",
+      error: "We couldn't update the requirement.",
+      typeChangeReasonRequired:
+        "Add a change note explaining why the requirement type is being updated.",
+      delete: "Delete requirement",
+      deleting: "Deleting...",
+      deleteConfirm: "Are you sure you want to delete this requirement? This action can't be undone.",
+      deleteError: "We couldn't delete the requirement.",
+      deleteHint: "Deleting will permanently remove this requirement from the project.",
+    },
     requirementTypes: {
       functional: "Functional",
-      "non-functional": "Non-functional",
+      "non-functional": "Non-Functional",
       performance: "Performance",
       security: "Security",
       usability: "Usability",
       compliance: "Compliance",
       integration: "Integration",
-      data: "Data quality",
+      data: "Data",
       other: "Other",
     },
     requirementStatuses: {

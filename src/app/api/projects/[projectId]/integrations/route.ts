@@ -114,7 +114,7 @@ export const PATCH = async (
   if (existingEncryptedToken) {
     try {
       decryptedExistingToken = decryptSecret(existingEncryptedToken);
-    } catch {
+    } catch (error) {
       console.error("Unable to decrypt stored JIRA token", error);
       decryptedExistingToken = null;
     }

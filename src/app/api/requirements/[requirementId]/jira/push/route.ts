@@ -154,7 +154,7 @@ export const POST = async (
   if (encryptedToken) {
     try {
       jiraApiToken = decryptSecret(encryptedToken);
-    } catch {
+    } catch (error) {
       console.error("Unable to decrypt stored JIRA token", error);
       jiraApiToken = null;
     }
@@ -311,7 +311,7 @@ export const POST = async (
       },
       { status: responseStatus }
     );
-  } catch {
+  } catch (error) {
     if (error instanceof JiraRequestError) {
       const detailMessage =
         error.message && error.message.length > 0
