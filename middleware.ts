@@ -4,16 +4,12 @@ const AUTH_ROUTES = new Set(["/login", "/register"]);
 const PROTECTED_PREFIXES = ["/projects", "/requirements", "/settings", "/api"];
 const CSRF_COOKIE_NAME = "funcio-csrf";
 
-const SECURITY_HEADERS: Array<[string, string]> = [
+const STATIC_SECURITY_HEADERS: Array<[string, string]> = [
   ["X-Frame-Options", "SAMEORIGIN"],
   ["X-Content-Type-Options", "nosniff"],
   ["Referrer-Policy", "strict-origin-when-cross-origin"],
   ["Permissions-Policy", "camera=(), microphone=(), geolocation=()"],
   ["X-DNS-Prefetch-Control", "off"],
-  [
-    "Content-Security-Policy",
-    "default-src 'self'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self' https://*.supabase.co https://generativelanguage.googleapis.com https://api.atlassian.com https://*.atlassian.net; font-src 'self' data:; frame-ancestors 'self'; form-action 'self'; base-uri 'self'",
-  ],
 ];
 
 const isPublicApiRoute = (pathname: string) =>
@@ -27,12 +23,58 @@ const isAuthRoute = (pathname: string) =>
   AUTH_ROUTES.has(pathname) ||
   AUTH_ROUTES.has(pathname.replace(/\/$/, ""));
 
+const generateNonce = () => {
+  const array = new Uint8Array(16);
+  crypto.getRandomValues(array);
+  let binary = "";
+  array.forEach((value) => {
+    binary += String.fromCharCode(value);
+  });
+  return btoa(binary);
+};
+
+const createContentSecurityPolicy = (nonce: string, isDev: boolean) => {
+  const scriptSrc = ["'self'", `'nonce-${nonce}'`, "'strict-dynamic'"];
+  if (isDev) {
+    scriptSrc.push("'unsafe-eval'");
+  }
+
+  const connectSrc = [
+    "'self'",
+    "https://*.supabase.co",
+    "https://generativelanguage.googleapis.com",
+    "https://api.atlassian.com",
+    "https://*.atlassian.net",
+  ];
+
+  if (isDev) {
+    connectSrc.push("ws:", "wss:");
+  }
+
+  return [
+    "default-src 'self'",
+    "img-src 'self' data: blob:",
+    "style-src 'self' 'unsafe-inline'",
+    `script-src ${scriptSrc.join(" ")}`,
+    `connect-src ${connectSrc.join(" ")}`,
+    "font-src 'self' data:",
+    "frame-ancestors 'self'",
+    "form-action 'self'",
+    "base-uri 'self'",
+  ].join("; ");
+};
+
 export function middleware(req: NextRequest) {
   const pathname = req.nextUrl.pathname;
 
   if (pathname.startsWith("/_next") || pathname.startsWith("/public")) {
     return NextResponse.next();
   }
+
+  const nonce = generateNonce();
+  const isDev = process.env.NODE_ENV !== "production";
+  const requestHeaders = new Headers(req.headers);
+  requestHeaders.set("x-csp-nonce", nonce);
 
   const accessToken =
     req.cookies.get("sb-nqlnhrhazihuqtrvpbsj-auth-token")?.value ?? null;
@@ -51,7 +93,11 @@ export function middleware(req: NextRequest) {
     redirectUrl.search = "";
     response = NextResponse.redirect(redirectUrl);
   } else {
-    response = NextResponse.next();
+    response = NextResponse.next({
+      request: {
+        headers: requestHeaders,
+      },
+    });
   }
 
   if (!req.cookies.get(CSRF_COOKIE_NAME)?.value) {
@@ -73,9 +119,16 @@ export function middleware(req: NextRequest) {
       "max-age=63072000; includeSubDomains; preload",
     );
   }
-  for (const [key, value] of SECURITY_HEADERS) {
+
+  for (const [key, value] of STATIC_SECURITY_HEADERS) {
     response.headers.set(key, value);
   }
+
+  response.headers.set(
+    "Content-Security-Policy",
+    createContentSecurityPolicy(nonce, isDev),
+  );
+  response.headers.set("x-csp-nonce", nonce);
 
   return response;
 }
